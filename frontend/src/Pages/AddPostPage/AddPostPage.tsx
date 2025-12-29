@@ -78,14 +78,6 @@ const AddPostPage: React.FC = () => {
   // Get dynamic options based on selections
   const countryOptions = Object.keys(locationData.countries);
 
-  // Type guard to narrow down the type of locationData.countries
-  const isCountryValid = (
-    country: string | number | symbol,
-    countries: (typeof locationData)["countries"]
-  ): country is keyof typeof countries => {
-    return typeof country === "string" && country in countries;
-  };
-
   // Safely access state options
   const stateOptions =
     formData.country && formData.country in locationData.countries
