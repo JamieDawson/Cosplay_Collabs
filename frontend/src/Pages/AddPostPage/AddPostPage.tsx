@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { locationData } from "../../Data/locations";
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -9,7 +9,7 @@ const AddPostPage: React.FC = () => {
   const maxLengthTitle = 65;
 
   const [formData, setFormData] = useState({
-    user_id: user?.sub, // User ID creating the ad
+    user_id: user?.sub || "", // User ID creating the ad
     title: "",
     description: "",
     country: "",
@@ -18,6 +18,13 @@ const AddPostPage: React.FC = () => {
     instagramPostUrl: "",
     keywords: ["", "", "", ""],
   });
+
+  // Keep user_id in sync with current user
+  useEffect(() => {
+    if (user?.sub) {
+      setFormData((prev) => ({ ...prev, user_id: user.sub || "" }));
+    }
+  }, [user?.sub]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -53,8 +60,18 @@ const AddPostPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Remove the `id` field before submitting the request
-    const { ...adData } = formData; // No need to remove `id` anymore, it's not in the state
+
+    // Ensure we use the current user?.sub value, not a potentially stale one
+    if (!user?.sub) {
+      alert("User not authenticated. Please log in.");
+      return;
+    }
+
+    // Use current user?.sub instead of potentially stale formData.user_id
+    const adData = {
+      ...formData,
+      user_id: user.sub, // Always use current user.sub value
+    };
 
     try {
       // Change URL to your backend's full address
@@ -67,6 +84,17 @@ const AddPostPage: React.FC = () => {
       if (response.ok) {
         setAdCreatedPopUp(true);
         //alert("Ad created successfully!");
+        // Reset the form data after successful ad creation
+        setFormData({
+          user_id: user?.sub || "", // User ID creating the ad
+          title: "",
+          description: "",
+          country: "",
+          state: "",
+          city: "",
+          instagramPostUrl: "",
+          keywords: ["", "", "", ""],
+        });
       } else {
         alert("Failed to create ad.");
       }
