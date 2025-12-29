@@ -25,20 +25,30 @@ const AddPostPage: React.FC = () => {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
 
-    // Clear dependent fields when higher-level fields change
-    if (name === "country") {
-      setFormData({ ...formData, country: value, state: "", city: "" });
-    } else if (name === "state") {
-      setFormData({ ...formData, state: value, city: "" });
-    }
+    // Use functional update to avoid stale closures
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+
+      // Clear dependent fields when higher-level fields change
+      if (name === "country") {
+        updated.state = "";
+        updated.city = "";
+      } else if (name === "state") {
+        updated.city = "";
+      }
+
+      return updated;
+    });
   };
 
   const handleKeywordChange = (index: number, value: string) => {
-    const updatedKeywords = [...formData.keywords];
-    updatedKeywords[index] = value;
-    setFormData({ ...formData, keywords: updatedKeywords });
+    // Use functional update to avoid stale closures
+    setFormData((prev) => {
+      const updatedKeywords = [...prev.keywords];
+      updatedKeywords[index] = value;
+      return { ...prev, keywords: updatedKeywords };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -114,9 +124,11 @@ const AddPostPage: React.FC = () => {
       {adCreatedPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
-            <p className="text-lg font-semibold text-gray-800 mb-4 text-center">Ad created!</p>
+            <p className="text-lg font-semibold text-gray-800 mb-4 text-center">
+              Ad created!
+            </p>
             <div className="flex justify-center">
-              <button 
+              <button
                 onClick={() => closeAdCreatedPopup()}
                 className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
               >
@@ -129,10 +141,12 @@ const AddPostPage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-50 py-8 px-4">
         {!isAuthenticated ? (
           <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 text-center">
-            <h2 className="text-2xl font-bold text-gray-800">You need an account to create an ad.</h2>
+            <h2 className="text-2xl font-bold text-gray-800">
+              You need an account to create an ad.
+            </h2>
           </div>
         ) : (
-          <form 
+          <form
             onSubmit={handleSubmit}
             className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8 flex flex-col gap-4"
           >
@@ -221,7 +235,7 @@ const AddPostPage: React.FC = () => {
                 className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm md:text-base"
               />
             ))}
-            <button 
+            <button
               type="submit"
               className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-bold text-base md:text-lg mt-2"
             >
