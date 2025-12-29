@@ -31,9 +31,8 @@ const ProfileCompletion: React.FC = () => {
 
       console.log("Profile updated successfully:", response.data);
 
-      // ✅ Update context and localStorage
+      // ✅ Update context (which handles localStorage internally)
       setUsername(trimmedUsername);
-      localStorage.setItem("username", trimmedUsername);
 
       // ✅ Navigate to /profile/:username
       navigate(`/profile/${trimmedUsername}`);
