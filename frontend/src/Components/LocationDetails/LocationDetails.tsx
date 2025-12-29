@@ -46,7 +46,7 @@ const LocationDetails: React.FC = () => {
     };
 
     fetchAds();
-  }, []);
+  }, [country, state, city]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-50 py-8 px-4">
@@ -56,7 +56,7 @@ const LocationDetails: React.FC = () => {
             Details for {city}, {state}, {country}
           </h1>
           <Link to="/places">
-            <button 
+            <button
               type="button"
               className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
             >
