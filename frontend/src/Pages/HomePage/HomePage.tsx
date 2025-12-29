@@ -18,9 +18,11 @@ interface Ad {
 
 const HomePage: React.FC = () => {
   const [frontPageAds, setFrontPageAds] = useState<Ad[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getAdsForFrontPage = async () => {
+      setLoading(true);
       try {
         const response = await fetch(
           "http://localhost:3000/api/ads/most-recent"
@@ -31,6 +33,8 @@ const HomePage: React.FC = () => {
         }
       } catch (error) {
         console.error("Error fetching ads:", error);
+      } finally {
+        setLoading(false);
       }
     };
     getAdsForFrontPage();
@@ -47,6 +51,21 @@ const HomePage: React.FC = () => {
     768: 2,
     640: 1
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-50 py-8 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+            <div className="flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+              <p className="text-xl text-gray-600">Loading ads...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-50 py-8 px-4">

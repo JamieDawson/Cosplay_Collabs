@@ -24,11 +24,16 @@ const TagsPage = () => {
   const queryKeyword = searchParams.get("q") || "";
   const [typedTag, setTypedTag] = useState(queryKeyword);
   const [ads, setAds] = useState<Ad[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchAds = async () => {
-      if (!queryKeyword) return;
+      if (!queryKeyword) {
+        setLoading(false);
+        return;
+      }
 
+      setLoading(true);
       const cleanTag = normalizeTag(decodeURIComponent(queryKeyword));
 
       try {
@@ -36,9 +41,11 @@ const TagsPage = () => {
           `http://localhost:3000/api/ads/ads-by-tag/${cleanTag}`
         );
         const json = await response.json();
-        setAds(json.data);
+        setAds(json.data || []);
       } catch (error) {
         console.error("Error fetching ads:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -68,11 +75,13 @@ const TagsPage = () => {
         <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Tags Page</h2>
           {queryKeyword && (
-            <h3 className="text-xl text-gray-600">Selected keyword: {decodeURIComponent(queryKeyword)}</h3>
+            <h3 className="text-xl text-gray-600">
+              Selected keyword: {decodeURIComponent(queryKeyword)}
+            </h3>
           )}
         </div>
 
-        <form 
+        <form
           onSubmit={lookupTag}
           className="bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-8"
         >
@@ -83,7 +92,7 @@ const TagsPage = () => {
               placeholder="Search by tag"
               className="flex-1 p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm md:text-base"
             />
-            <button 
+            <button
               type="submit"
               className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm md:text-base"
             >
@@ -92,7 +101,14 @@ const TagsPage = () => {
           </div>
         </form>
 
-        {ads.length > 0 ? (
+        {loading ? (
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+            <div className="flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+              <p className="text-xl text-gray-600">Loading ads...</p>
+            </div>
+          </div>
+        ) : ads.length > 0 ? (
           <Masonry
             breakpointCols={{ default: 3, 1024: 3, 768: 2, 640: 1 }}
             className="my-masonry-grid"
