@@ -3,12 +3,14 @@ import axios from "axios";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../UserContext"; // ✅ Make sure path is correct
+import { useToast } from "../../hooks/useToast";
 
 const ProfileCompletion: React.FC = () => {
   const { user } = useAuth0();
   const [username, setUsernameInput] = useState("");
   const navigate = useNavigate();
   const { setUsername } = useUser(); // ✅ Get context setter
+  const { showToast, ToastContainer } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,13 +40,15 @@ const ProfileCompletion: React.FC = () => {
       navigate(`/profile/${trimmedUsername}`);
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to complete profile. Please try again.");
+      showToast("Failed to complete profile. Please try again.", "error");
     }
   };
 
   return (
-    <div>
-      <h2>Complete Your Profile</h2>
+    <>
+      <ToastContainer />
+      <div>
+        <h2>Complete Your Profile</h2>
       <form onSubmit={handleSubmit}>
         <label htmlFor="username">Custom Username:</label>
         <input
@@ -56,7 +60,8 @@ const ProfileCompletion: React.FC = () => {
         />
         <button type="submit">Save Profile</button>
       </form>
-    </div>
+      </div>
+    </>
   );
 };
 

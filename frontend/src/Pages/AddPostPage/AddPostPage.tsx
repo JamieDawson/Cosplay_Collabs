@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { locationData } from "../../Data/locations";
 import { useAuth0 } from "@auth0/auth0-react";
+import { useToast } from "../../hooks/useToast";
 
 const AddPostPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth0();
+  const { showToast, ToastContainer } = useToast();
   const [adCreatedPopup, setAdCreatedPopUp] = useState(false);
   const maxLengthDescription = 200;
   const maxLengthTitle = 65;
@@ -63,7 +65,7 @@ const AddPostPage: React.FC = () => {
 
     // Ensure we use the current user?.sub value, not a potentially stale one
     if (!user?.sub) {
-      alert("User not authenticated. Please log in.");
+      showToast("User not authenticated. Please log in.", "error");
       return;
     }
 
@@ -83,7 +85,7 @@ const AddPostPage: React.FC = () => {
 
       if (response.ok) {
         setAdCreatedPopUp(true);
-        //alert("Ad created successfully!");
+        showToast("Ad created successfully!", "success");
         // Reset the form data after successful ad creation
         setFormData({
           user_id: user?.sub || "", // User ID creating the ad
@@ -96,10 +98,14 @@ const AddPostPage: React.FC = () => {
           keywords: ["", "", "", ""],
         });
       } else {
-        alert("Failed to create ad.");
+        showToast("Failed to create ad. Please try again.", "error");
       }
     } catch (error) {
       console.error("Error creating ad:", error);
+      showToast(
+        "An error occurred while creating the ad. Please try again.",
+        "error"
+      );
     }
   };
 
@@ -141,6 +147,7 @@ const AddPostPage: React.FC = () => {
 
   return (
     <>
+      <ToastContainer />
       {adCreatedPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
