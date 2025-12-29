@@ -92,8 +92,8 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
           </div>
         )}
 
-        <div className="flex justify-center items-center p-4 bg-gradient-to-br from-purple-50 to-pink-50">
-          <div className="w-full max-w-[350px] transform scale-90 origin-center">
+        <div className="flex justify-center items-center p-1 bg-gradient-to-br from-purple-50 to-pink-50">
+          <div className="w-full max-w-[350px] transform scale-95 origin-center">
             <InstagramEmbed url={ad.instagram_post_url} />
           </div>
         </div>

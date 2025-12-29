@@ -1,10 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import NavBar from "./Components/NavBar/NavBar.component";
-import InstagramComponent from "./Components/InstagramComponent/InstagramComponent.component";
-import CreateAdForm from "./Components/CreateAdForm/CreateAdForm";
 import HomePage from "./Pages/HomePage/HomePage";
 import AboutPage from "./Pages/AboutPage/AboutPage";
-import LocationsMapper from "./Components/LocationsMapper/LocationsMapper.component";
+import AddPostPage from "./Pages/AddPostPage/AddPostPage";
+import PlacesPage from "./Pages/PlacesPage/PlacesPage";
 import LocationDetails from "./Components/LocationDetails/LocationDetails";
 import Profile from "./Pages/ProfilePage/Profile";
 import ProfileCompletion from "./Components/ProfileComplete/ProfileComplete.component";
@@ -21,8 +20,8 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/add-post" element={<CreateAdForm />} />
-          <Route path="/places" element={<LocationsMapper />} />
+          <Route path="/add-post" element={<AddPostPage />} />
+          <Route path="/places" element={<PlacesPage />} />
           <Route
             path="/places/:country/:state/:city"
             element={<LocationDetails />}
