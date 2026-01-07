@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import NavBar from "./Components/NavBar/NavBar.component";
+import ErrorBoundary from "./Components/ErrorBoundary/ErrorBoundary.component";
 import HomePage from "./Pages/HomePage/HomePage";
 import AboutPage from "./Pages/AboutPage/AboutPage";
 import AddPostPage from "./Pages/AddPostPage/AddPostPage";
@@ -16,22 +17,98 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <NavBar />
+        <ErrorBoundary>
+          <NavBar />
+        </ErrorBoundary>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/add-post" element={<AddPostPage />} />
-          <Route path="/places" element={<PlacesPage />} />
+          <Route
+            path="/"
+            element={
+              <ErrorBoundary>
+                <HomePage />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/about"
+            element={
+              <ErrorBoundary>
+                <AboutPage />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/add-post"
+            element={
+              <ErrorBoundary>
+                <AddPostPage />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/places"
+            element={
+              <ErrorBoundary>
+                <PlacesPage />
+              </ErrorBoundary>
+            }
+          />
           <Route
             path="/places/:country/:state/:city"
-            element={<LocationDetails />}
+            element={
+              <ErrorBoundary>
+                <LocationDetails />
+              </ErrorBoundary>
+            }
           />
-          <Route path="/places/:country/:state" element={<StateDetails />} />
-          <Route path="/profile/:username" element={<ProfilePage />} />
-          <Route path="/update-post" element={<UpdatePostForm />} />
-          <Route path="/complete-profile" element={<ProfileCompletion />} />
-          <Route path="/tags-page" element={<TagsPage />} />
-          <Route path="/post-login" element={<PostLoginRedirect />} />
+          <Route
+            path="/places/:country/:state"
+            element={
+              <ErrorBoundary>
+                <StateDetails />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/profile/:username"
+            element={
+              <ErrorBoundary>
+                <ProfilePage />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/update-post"
+            element={
+              <ErrorBoundary>
+                <UpdatePostForm />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/complete-profile"
+            element={
+              <ErrorBoundary>
+                <ProfileCompletion />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/tags-page"
+            element={
+              <ErrorBoundary>
+                <TagsPage />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/post-login"
+            element={
+              <ErrorBoundary>
+                <PostLoginRedirect />
+              </ErrorBoundary>
+            }
+          />
         </Routes>
       </div>
     </Router>
