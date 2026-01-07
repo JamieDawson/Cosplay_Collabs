@@ -108,11 +108,7 @@ const LocationDetails: React.FC = () => {
               columnClassName="my-masonry-grid_column"
             >
               {ads.map((ad) => (
-                <InstagramComponent
-                  key={ad.id.toString()}
-                  ad={ad}
-                  onDelete={() => {}}
-                />
+                <InstagramComponent key={ad.id.toString()} ad={ad} />
               ))}
             </Masonry>
           )}

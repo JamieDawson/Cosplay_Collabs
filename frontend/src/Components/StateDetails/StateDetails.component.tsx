@@ -55,7 +55,7 @@ const StateDetails: React.FC = () => {
             All ads for {state}, {country}
           </h1>
           <Link to="/places">
-            <button 
+            <button
               type="button"
               className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
             >
@@ -75,11 +75,7 @@ const StateDetails: React.FC = () => {
             columnClassName="my-masonry-grid_column"
           >
             {ads.map((ad) => (
-              <InstagramComponent
-                key={ad.id.toString()}
-                ad={ad}
-                onDelete={() => {}}
-              />
+              <InstagramComponent key={ad.id.toString()} ad={ad} />
             ))}
           </Masonry>
         )}

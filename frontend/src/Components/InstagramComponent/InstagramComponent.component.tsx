@@ -15,13 +15,18 @@ interface Ad {
 
 interface InstagramComponentProps {
   ad: Ad;
-  onDelete: (deletedId: number) => void;
+  onDelete?: (deletedId: number) => void; // Optional - defaults to no-op
   onTagClick?: (tag: string) => void; // ✅ optional prop
 }
 
+// Default no-op function - stable reference, doesn't create new function on each render
+const defaultOnDelete = () => {
+  // No-op: deletion handled internally, parent doesn't need to update
+};
+
 const InstagramComponent: React.FC<InstagramComponentProps> = ({
   ad,
-  onDelete,
+  onDelete = defaultOnDelete,
   onTagClick,
 }) => {
   const { user } = useAuth0();

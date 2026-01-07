@@ -232,7 +232,7 @@ function Profile() {
             columnClassName="my-masonry-grid_column"
           >
             {ads.map((ad) => (
-              <InstagramComponent key={ad._id} ad={ad} onDelete={() => {}} />
+              <InstagramComponent key={ad._id} ad={ad} />
             ))}
           </Masonry>
         </div>

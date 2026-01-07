@@ -118,7 +118,6 @@ const TagsPage = () => {
               <InstagramComponent
                 key={ad.id.toString()}
                 ad={ad}
-                onDelete={() => {}}
                 onTagClick={handleTagClick}
               />
             ))}
