@@ -31,7 +31,7 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
   const [adToDelete, setAdToDelete] = useState<number | null>(null);
 
   const goToUpdateForm = (ad: Ad) => {
-    navigate("/UpdatePostForm", { state: { ad } });
+    navigate("/update-post", { state: { ad } });
   };
 
   const goToTagPage = (keyword: string) => {

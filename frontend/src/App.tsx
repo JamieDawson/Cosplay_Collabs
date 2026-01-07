@@ -28,7 +28,7 @@ function App() {
           />
           <Route path="/places/:country/:state" element={<StateDetails />} />
           <Route path="/profile/:username" element={<ProfilePage />} />
-          <Route path="/UpdatePostForm" element={<UpdatePostForm />} />
+          <Route path="/update-post" element={<UpdatePostForm />} />
           <Route path="/complete-profile" element={<ProfileCompletion />} />
           <Route path="/tags-page" element={<TagsPage />} />
           <Route path="/post-login" element={<PostLoginRedirect />} />
