@@ -4,7 +4,7 @@ import HomePage from "./Pages/HomePage/HomePage";
 import AboutPage from "./Pages/AboutPage/AboutPage";
 import AddPostPage from "./Pages/AddPostPage/AddPostPage";
 import PlacesPage from "./Pages/PlacesPage/PlacesPage";
-import LocationDetails from "./Components/LocationDetails/LocationDetails";
+import LocationDetails from "./Components/LocationDetails/LocationDetails.component";
 import ProfilePage from "./Pages/ProfilePage/ProfilePage";
 import ProfileCompletion from "./Components/ProfileComplete/ProfileComplete.component";
 import UpdatePostForm from "./Components/UpdatePostForm/UpdatePostForm.component";
