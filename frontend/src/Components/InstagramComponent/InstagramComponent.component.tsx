@@ -1,7 +1,8 @@
-import { InstagramEmbed } from "react-social-media-embed";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useS3Image } from "../../hooks/useS3Image";
+import { InstagramEmbed } from "react-social-media-embed";
 
 interface Ad {
   _id?: string;
@@ -9,9 +10,17 @@ interface Ad {
   user_id: string;
   title: string;
   description: string;
-  instagram_post_url: string;
+  instagram_post_url: string; // Stores S3 image key/fileName OR legacy Instagram URL
   keywords: string[];
 }
+
+/**
+ * Check if a string is an Instagram URL (legacy data)
+ */
+const isInstagramUrl = (url: string | null | undefined): boolean => {
+  if (!url) return false;
+  return url.includes("instagram.com") || (url.startsWith("http://") && !url.includes("s3.")) || (url.startsWith("https://") && !url.includes("s3."));
+};
 
 interface InstagramComponentProps {
   ad: Ad;
@@ -34,6 +43,11 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [confirmDeletedPopup, setConfirmDeletedPopup] = useState(false);
   const [adToDelete, setAdToDelete] = useState<number | null>(null);
+  
+  // Get pre-signed URL for the S3 image
+  const { imageUrl, loading: imageLoading, error: imageError } = useS3Image(
+    ad.instagram_post_url
+  );
 
   const goToUpdateForm = (ad: Ad) => {
     navigate("/update-post", { state: { ad } });
@@ -97,10 +111,32 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
           </div>
         )}
 
-        <div className="flex justify-center items-center p-1 bg-gradient-to-br from-purple-50 to-pink-50">
-          <div className="w-full max-w-[350px] transform scale-95 origin-center">
-            <InstagramEmbed url={ad.instagram_post_url} />
-          </div>
+        <div className="flex justify-center items-center p-1 bg-gradient-to-br from-purple-50 to-pink-50 min-h-[400px]">
+          {isInstagramUrl(ad.instagram_post_url) ? (
+            // Legacy Instagram embed for old posts
+            <div className="w-full max-w-[350px] transform scale-95 origin-center">
+              <InstagramEmbed url={ad.instagram_post_url} />
+            </div>
+          ) : imageLoading ? (
+            <div className="flex flex-col items-center justify-center w-full h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+              <p className="text-gray-600">Loading image...</p>
+            </div>
+          ) : imageError || !imageUrl ? (
+            <div className="flex flex-col items-center justify-center w-full h-full text-gray-500">
+              <p className="text-sm">Failed to load image</p>
+            </div>
+          ) : (
+            <img
+              src={imageUrl}
+              alt={ad.title}
+              className="w-full max-w-[350px] h-auto object-contain rounded-lg"
+              onError={(e) => {
+                console.error("Image failed to load:", imageUrl);
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          )}
         </div>
 
         <div className="p-4 flex flex-col gap-3">

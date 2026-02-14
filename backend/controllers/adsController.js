@@ -9,12 +9,16 @@ const createAd = async (req, res) => {
     country,
     state,
     city,
-    instagramPostUrl,
+    imageUrl, // Changed from instagramPostUrl to imageUrl
     keywords,
   } = req.body;
 
   if (!user_id || !title) {
     return res.status(400).json({ error: "user_id and title are required" });
+  }
+
+  if (!imageUrl) {
+    return res.status(400).json({ error: "imageUrl is required" });
   }
 
   const normalizeTag = (tag) => tag.toLowerCase().replace(/\s+/g, "");
@@ -30,7 +34,7 @@ const createAd = async (req, res) => {
     country,
     state,
     city,
-    instagramPostUrl,
+    imageUrl,
     keywords: normalizedKeywords,
   });
 
@@ -48,7 +52,7 @@ const createAd = async (req, res) => {
       country || null,
       state || null,
       city || null,
-      instagramPostUrl || null,
+      imageUrl, // Store S3 image URL in instagram_post_url column (we'll rename the column later if needed)
       JSON.stringify(normalizedKeywords),
     ];
 
@@ -70,7 +74,7 @@ const updateAdById = async (req, res) => {
     country,
     state,
     city,
-    instagramPostUrl,
+    imageUrl, // Changed from instagramPostUrl to imageUrl
     keywords,
   } = req.body;
 
@@ -101,7 +105,7 @@ const updateAdById = async (req, res) => {
       country,
       state,
       city,
-      instagramPostUrl,
+      imageUrl, // Store S3 image URL
       normalizedKeywords ? JSON.stringify(normalizedKeywords) : null,
       id,
     ];

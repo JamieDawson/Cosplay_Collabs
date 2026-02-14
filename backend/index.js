@@ -2,7 +2,8 @@
 const express = require("express");
 const cors = require("cors");
 const adsRoutes = require("./routes/adsRoutes");
-const usersRoutes = require("./routes/usersRoutes"); // Updated users routes
+const usersRoutes = require("./routes/usersRoutes");
+const s3Routes = require("./routes/s3Routes");
 
 const app = express();
 const port = 3000;
@@ -14,6 +15,7 @@ app.use(cors());
 // Routes
 app.use("/", adsRoutes);
 app.use("/", usersRoutes);
+app.use("/", s3Routes);
 
 // Start the server
 app.listen(port, () => {
