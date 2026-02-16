@@ -9,7 +9,9 @@ const createAd = async (req, res) => {
     country,
     state,
     city,
-    imageUrl, // Changed from instagramPostUrl to imageUrl
+    imageUrl, // Legacy: single image (for backward compatibility)
+    images, // New: array of images (S3 keys or Instagram URLs)
+    imageType, // "s3" or "instagram"
     keywords,
   } = req.body;
 
@@ -17,9 +19,82 @@ const createAd = async (req, res) => {
     return res.status(400).json({ error: "user_id and title are required" });
   }
 
-  if (!imageUrl) {
-    return res.status(400).json({ error: "imageUrl is required" });
+  // Support both new array format and legacy single image format
+  let imagesToStore = [];
+  if (images && Array.isArray(images) && images.length > 0) {
+    // New format: array of images
+    imagesToStore = images;
+  } else if (imageUrl) {
+    // Legacy format: single image
+    imagesToStore = [imageUrl];
+  } else {
+    return res.status(400).json({ error: "At least one image is required" });
   }
+
+  // Validate image count based on type
+  if (imageType === "s3" && imagesToStore.length > 3) {
+    return res.status(400).json({ error: "Maximum 3 S3 images allowed per ad" });
+  }
+  if (imageType === "instagram" && imagesToStore.length > 10) {
+    return res.status(400).json({ error: "Maximum 10 Instagram URLs allowed" });
+  }
+
+  // Check S3 upload limit per user (3 total across all ads)
+  if (imageType === "s3") {
+    try {
+      // Count existing S3 uploads for this user
+      const countQuery = `SELECT instagram_post_url FROM ads WHERE user_id = $1`;
+      const countResult = await pool.query(countQuery, [user_id]);
+
+      let existingS3Count = 0;
+      for (const row of countResult.rows) {
+        const instagramPostUrl = row.instagram_post_url;
+        if (!instagramPostUrl) continue;
+
+        // Try to parse as JSON array
+        let images = [];
+        try {
+          const parsed = JSON.parse(instagramPostUrl);
+          if (Array.isArray(parsed)) {
+            images = parsed;
+          } else {
+            images = [instagramPostUrl];
+          }
+        } catch {
+          images = [instagramPostUrl];
+        }
+
+        // Count S3 images
+        for (const image of images) {
+          if (image && typeof image === 'string' && 
+              image.startsWith("uploads/") && 
+              !image.includes("instagram.com")) {
+            existingS3Count++;
+          }
+        }
+      }
+
+      // Check if adding new images would exceed limit
+      const totalAfterUpload = existingS3Count + imagesToStore.length;
+      if (totalAfterUpload > 3) {
+        const remaining = Math.max(0, 3 - existingS3Count);
+        return res.status(400).json({ 
+          error: `You have reached your S3 upload limit. You have ${existingS3Count} uploads and can only upload ${remaining} more.` 
+        });
+      }
+    } catch (error) {
+      console.error("Error checking S3 upload count:", error);
+      // Don't block the upload if we can't check, but log the error
+    }
+  }
+
+  // Store images as JSON array in instagram_post_url column
+  // For backward compatibility, we'll store:
+  // - Single image: as string (existing format)
+  // - Multiple images: as JSON array string
+  const imagesJson = imagesToStore.length === 1 
+    ? imagesToStore[0] // Single image: store as string (backward compatible)
+    : JSON.stringify(imagesToStore); // Multiple images: store as JSON array
 
   const normalizeTag = (tag) => tag.toLowerCase().replace(/\s+/g, "");
 
@@ -34,7 +109,8 @@ const createAd = async (req, res) => {
     country,
     state,
     city,
-    imageUrl,
+    images: imagesToStore,
+    imageType,
     keywords: normalizedKeywords,
   });
 
@@ -52,7 +128,7 @@ const createAd = async (req, res) => {
       country || null,
       state || null,
       city || null,
-      imageUrl, // Store S3 image URL in instagram_post_url column (we'll rename the column later if needed)
+      imagesJson, // Store images (single string or JSON array)
       JSON.stringify(normalizedKeywords),
     ];
 
@@ -74,7 +150,9 @@ const updateAdById = async (req, res) => {
     country,
     state,
     city,
-    imageUrl, // Changed from instagramPostUrl to imageUrl
+    imageUrl, // Legacy: single image (for backward compatibility)
+    images, // New: array of images (S3 keys or Instagram URLs)
+    imageType, // "s3" or "instagram"
     keywords,
   } = req.body;
 
@@ -84,6 +162,26 @@ const updateAdById = async (req, res) => {
   const normalizedKeywords = Array.isArray(keywords)
     ? keywords.map(normalizeTag)
     : null;
+
+  // Handle images update (if provided)
+  let imagesJson = null;
+  if (images && Array.isArray(images) && images.length > 0) {
+    // New format: array of images
+    // Validate image count based on type
+    if (imageType === "s3" && images.length > 3) {
+      return res.status(400).json({ error: "Maximum 3 S3 images allowed" });
+    }
+    if (imageType === "instagram" && images.length > 10) {
+      return res.status(400).json({ error: "Maximum 10 Instagram URLs allowed" });
+    }
+    
+    imagesJson = images.length === 1 
+      ? images[0] // Single image: store as string (backward compatible)
+      : JSON.stringify(images); // Multiple images: store as JSON array
+  } else if (imageUrl) {
+    // Legacy format: single image
+    imagesJson = imageUrl;
+  }
 
   try {
     const query = `
@@ -105,7 +203,7 @@ const updateAdById = async (req, res) => {
       country,
       state,
       city,
-      imageUrl, // Store S3 image URL
+      imagesJson, // Store images (single string or JSON array, or null if not updating)
       normalizedKeywords ? JSON.stringify(normalizedKeywords) : null,
       id,
     ];
@@ -247,6 +345,70 @@ const getAdsByState = async (req, res) => {
   }
 };
 
+/**
+ * Count S3 uploads for a user
+ * S3 uploads are identified by:
+ * - Not containing "instagram.com"
+ * - Starting with "uploads/" (S3 key format)
+ * - Or being in a JSON array containing S3 keys
+ */
+const getS3UploadCount = async (req, res) => {
+  const { user_id } = req.params;
+
+  if (!user_id) {
+    return res.status(400).json({ error: "user_id is required" });
+  }
+
+  try {
+    // Get all ads for this user
+    const query = `SELECT instagram_post_url FROM ads WHERE user_id = $1`;
+    const result = await pool.query(query, [user_id]);
+
+    let s3UploadCount = 0;
+
+    // Count S3 uploads in each ad
+    for (const row of result.rows) {
+      const instagramPostUrl = row.instagram_post_url;
+      
+      if (!instagramPostUrl) continue;
+
+      // Try to parse as JSON array
+      let images = [];
+      try {
+        const parsed = JSON.parse(instagramPostUrl);
+        if (Array.isArray(parsed)) {
+          images = parsed;
+        } else {
+          // Single image (string)
+          images = [instagramPostUrl];
+        }
+      } catch {
+        // Not JSON, treat as single string
+        images = [instagramPostUrl];
+      }
+
+      // Count S3 images (not Instagram URLs)
+      for (const image of images) {
+        // S3 keys start with "uploads/" and don't contain "instagram.com"
+        if (image && typeof image === 'string' && 
+            image.startsWith("uploads/") && 
+            !image.includes("instagram.com")) {
+          s3UploadCount++;
+        }
+      }
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      count: s3UploadCount,
+      remaining: Math.max(0, 3 - s3UploadCount)
+    });
+  } catch (error) {
+    console.error("Error counting S3 uploads:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 const getAdsCountByCountry = async (req, res) => {
   console.log("Fetching ad counts by country...");
   try {
@@ -274,4 +436,5 @@ module.exports = {
   getAdsByUserId,
   getAdsByTag,
   getAdsByState,
+  getS3UploadCount,
 };

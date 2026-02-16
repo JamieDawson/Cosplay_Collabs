@@ -10,6 +10,9 @@ const AddPostPage: React.FC = () => {
   const maxLengthDescription = 200;
   const maxLengthTitle = 65;
 
+  // Toggle between S3 uploads and Instagram links
+  const [imageType, setImageType] = useState<"s3" | "instagram">("s3");
+  
   const [formData, setFormData] = useState({
     user_id: user?.sub || "", // User ID creating the ad
     title: "",
@@ -17,12 +20,23 @@ const AddPostPage: React.FC = () => {
     country: "",
     state: "",
     city: "",
-    imageUrl: "", // S3 image URL (stored after upload)
+    imageUrl: "", // For single image (legacy support)
     keywords: ["", "", "", ""],
   });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  // S3 uploads: array of files (max 3)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  
+  // Instagram links: array of URLs (max 10)
+  const [instagramUrls, setInstagramUrls] = useState<string[]>([""]);
+  
   const [uploading, setUploading] = useState(false);
+  
+  // S3 upload tracking
+  const [s3UploadCount, setS3UploadCount] = useState<number | null>(null);
+  const [s3UploadLoading, setS3UploadLoading] = useState(false);
+  const maxS3Uploads = 3;
 
   // Keep user_id in sync with current user
   useEffect(() => {
@@ -30,6 +44,41 @@ const AddPostPage: React.FC = () => {
       setFormData((prev) => ({ ...prev, user_id: user.sub || "" }));
     }
   }, [user?.sub]);
+
+  // Fetch S3 upload count when user is authenticated
+  useEffect(() => {
+    const fetchS3UploadCount = async () => {
+      if (!user?.sub) {
+        setS3UploadCount(null);
+        return;
+      }
+
+      setS3UploadLoading(true);
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/ads/s3-upload-count/${encodeURIComponent(user.sub)}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setS3UploadCount(data.count || 0);
+        } else {
+          console.error("Failed to fetch S3 upload count");
+          setS3UploadCount(0); // Default to 0 on error
+        }
+      } catch (error) {
+        console.error("Error fetching S3 upload count:", error);
+        setS3UploadCount(0); // Default to 0 on error
+      } finally {
+        setS3UploadLoading(false);
+      }
+    };
+
+    fetchS3UploadCount();
+  }, [user?.sub]);
+
+  // Calculate remaining uploads
+  const remainingUploads = s3UploadCount !== null ? Math.max(0, maxS3Uploads - s3UploadCount) : null;
+  const canUploadS3 = remainingUploads !== null && remainingUploads > 0;
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -63,7 +112,7 @@ const AddPostPage: React.FC = () => {
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate file type
@@ -78,14 +127,45 @@ const AddPostPage: React.FC = () => {
         return;
       }
 
-      setSelectedFile(file);
+      // Update files array
+      const newFiles = [...selectedFiles];
+      newFiles[index] = file;
+      setSelectedFiles(newFiles);
 
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const newPreviews = [...imagePreviews];
+        newPreviews[index] = reader.result as string;
+        setImagePreviews(newPreviews);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    setSelectedFiles(newFiles);
+    setImagePreviews(newPreviews);
+  };
+
+  const handleInstagramUrlChange = (index: number, value: string) => {
+    const newUrls = [...instagramUrls];
+    newUrls[index] = value;
+    setInstagramUrls(newUrls);
+  };
+
+  const addInstagramUrlField = () => {
+    if (instagramUrls.length < 10) {
+      setInstagramUrls([...instagramUrls, ""]);
+    }
+  };
+
+  const removeInstagramUrl = (index: number) => {
+    if (instagramUrls.length > 1) {
+      const newUrls = instagramUrls.filter((_, i) => i !== index);
+      setInstagramUrls(newUrls);
     }
   };
 
@@ -141,32 +221,80 @@ const AddPostPage: React.FC = () => {
       return;
     }
 
-    // Validate that an image is selected
-    if (!selectedFile && !formData.imageUrl) {
-      showToast("Please select an image to upload.", "error");
-      return;
-    }
-
     setUploading(true);
 
     try {
-      let imageUrl = formData.imageUrl;
+      let images: string[] = [];
 
-      // If a new file is selected, upload it first
-      if (selectedFile) {
-        const s3FileName = await uploadImageToS3(selectedFile);
-        // Store the S3 file name/key - we'll generate view URLs when displaying
-        imageUrl = s3FileName;
+      if (imageType === "s3") {
+        // Frontend validation: Check if user can upload more S3 images
+        if (!canUploadS3) {
+          showToast("You have reached your S3 upload limit (3 uploads). Please use Instagram links instead.", "error");
+          setUploading(false);
+          return;
+        }
+
+        // Validate S3 uploads
+        const validFiles = selectedFiles.filter((file) => file !== null && file !== undefined);
+        if (validFiles.length === 0) {
+          showToast("Please select at least one image to upload.", "error");
+          setUploading(false);
+          return;
+        }
+
+        // Check if adding these files would exceed the limit
+        if (s3UploadCount !== null && s3UploadCount + validFiles.length > maxS3Uploads) {
+          const remaining = maxS3Uploads - s3UploadCount;
+          showToast(
+            `You can only upload ${remaining} more image${remaining !== 1 ? 's' : ''}. You have ${s3UploadCount} uploads already.`,
+            "error"
+          );
+          setUploading(false);
+          return;
+        }
+
+        // Upload all files to S3
+        const uploadPromises = validFiles.map((file) => uploadImageToS3(file));
+        const s3FileNames = await Promise.all(uploadPromises);
+        images = s3FileNames;
+        
+        // Update local count after successful upload
+        if (s3UploadCount !== null) {
+          setS3UploadCount(s3UploadCount + s3FileNames.length);
+        }
+      } else {
+        // Validate Instagram URLs
+        const validUrls = instagramUrls.filter((url) => url.trim() !== "");
+        if (validUrls.length === 0) {
+          showToast("Please enter at least one Instagram URL.", "error");
+          setUploading(false);
+          return;
+        }
+
+        // Validate Instagram URL format
+        const instagramUrlPattern = /^https?:\/\/(www\.)?instagram\.com\/p\/[A-Za-z0-9_-]+\/?/;
+        for (const url of validUrls) {
+          if (!instagramUrlPattern.test(url.trim())) {
+            showToast("Please enter valid Instagram post URLs.", "error");
+            setUploading(false);
+            return;
+          }
+        }
+
+        images = validUrls.map((url) => url.trim());
       }
 
       // Use current user?.sub instead of potentially stale formData.user_id
       const adData = {
         ...formData,
         user_id: user.sub, // Always use current user.sub value
-        imageUrl, // S3 file name/key
+        images, // Array of S3 keys or Instagram URLs
+        imageType, // "s3" or "instagram"
+        // Keep imageUrl for backward compatibility (use first image)
+        imageUrl: images[0] || "",
       };
 
-      // Step 3: Create the ad with the image URL
+      // Create the ad with the images
       const response = await fetch("http://localhost:3000/api/ads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -176,6 +304,22 @@ const AddPostPage: React.FC = () => {
       if (response.ok) {
         setAdCreatedPopUp(true);
         showToast("Ad created successfully!", "success");
+        
+        // Refresh S3 upload count if S3 images were uploaded
+        if (imageType === "s3" && user?.sub) {
+          try {
+            const countResponse = await fetch(
+              `http://localhost:3000/api/ads/s3-upload-count/${encodeURIComponent(user.sub)}`
+            );
+            if (countResponse.ok) {
+              const countData = await countResponse.json();
+              setS3UploadCount(countData.count || 0);
+            }
+          } catch (error) {
+            console.error("Error refreshing S3 upload count:", error);
+          }
+        }
+        
         // Reset the form data after successful ad creation
         setFormData({
           user_id: user?.sub || "",
@@ -187,11 +331,13 @@ const AddPostPage: React.FC = () => {
           imageUrl: "",
           keywords: ["", "", "", ""],
         });
-        setSelectedFile(null);
-        setImagePreview(null);
-        // Reset file input
-        const fileInput = document.getElementById("image-upload") as HTMLInputElement;
-        if (fileInput) fileInput.value = "";
+        setSelectedFiles([]);
+        setImagePreviews([]);
+        setInstagramUrls([""]);
+        // Reset file inputs
+        document.querySelectorAll('input[type="file"]').forEach((input) => {
+          (input as HTMLInputElement).value = "";
+        });
       } else {
         const errorData = await response.json();
         showToast(
@@ -348,34 +494,139 @@ const AddPostPage: React.FC = () => {
                 </option>
               ))}
             </select>
+            
+            {/* Image Type Toggle */}
             <div className="flex flex-col gap-2">
-              <label
-                htmlFor="image-upload"
-                className="text-sm font-medium text-gray-700"
-              >
-                Upload Image *
+              <label className="text-sm font-medium text-gray-700">
+                Image Type *
               </label>
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                required={!formData.imageUrl}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm md:text-base file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
-              />
-              {imagePreview && (
-                <div className="mt-2">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="max-w-full h-48 object-contain rounded-lg border border-gray-300"
-                  />
-                </div>
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (canUploadS3) {
+                      setImageType("s3");
+                      setSelectedFiles([]);
+                      setImagePreviews([]);
+                    } else {
+                      showToast("You have reached your S3 upload limit (3 uploads). Please use Instagram links instead.", "error");
+                    }
+                  }}
+                  disabled={!canUploadS3}
+                  className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                    !canUploadS3
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : imageType === "s3"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                >
+                  Upload Images {!canUploadS3 && "(Limit Reached)"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImageType("instagram");
+                    setSelectedFiles([]);
+                    setImagePreviews([]);
+                  }}
+                  className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                    imageType === "instagram"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                >
+                  Instagram Links (Max 10)
+                </button>
+              </div>
+              {/* Display remaining S3 uploads */}
+              {s3UploadLoading ? (
+                <p className="text-xs text-gray-500">Loading upload count...</p>
+              ) : remainingUploads !== null && (
+                <p className={`text-xs ${remainingUploads === 0 ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
+                  {remainingUploads === 0 
+                    ? "You've reached your original image upload limit (3 uploads). Please use Instagram links."
+                    : `You're allowed ${remainingUploads} more original upload${remainingUploads !== 1 ? 's' : ''} (${s3UploadCount}/${maxS3Uploads} used)`
+                  }
+                </p>
               )}
-              <p className="text-xs text-gray-500">
-                Accepted formats: JPG, PNG, GIF. Max size: 5MB
-              </p>
             </div>
+
+            {/* S3 Upload Section */}
+            {imageType === "s3" && (
+              <div className="flex flex-col gap-4">
+                <label className="text-sm font-medium text-gray-700">
+                  Upload Images * (Max 3)
+                </label>
+                {Array.from({ length: 1 }).map((_, index) => (
+                  <div key={index} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        id={`image-upload-${index}`}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange(index, e)}
+                        className="flex-1 p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm md:text-base file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                      />
+                      {imagePreviews[index] && (
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    {imagePreviews[index] && (
+                      <div className="mt-2">
+                        <img
+                          src={imagePreviews[index]}
+                          alt={`Preview ${index + 1}`}
+                          className="max-w-full h-48 object-contain rounded-lg border border-gray-300"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <p className="text-xs text-gray-500">
+                  Accepted formats: JPG, PNG, GIF. Max size: 5MB per image
+                </p>
+              </div>
+            )}
+
+            {/* Instagram URLs Section */}
+            {imageType === "instagram" && (
+              <div className="flex flex-col gap-4">
+                <label className="text-sm font-medium text-gray-700">
+                  Instagram Post URLs * (Max 10)
+                </label>
+                {instagramUrls.map((url, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="url"
+                      placeholder={`Instagram URL ${index + 1} (e.g., https://www.instagram.com/p/ABC123/)`}
+                      value={url}
+                      onChange={(e) => handleInstagramUrlChange(index, e.target.value)}
+                      className="flex-1 p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm md:text-base"
+                    />
+                    {instagramUrls.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeInstagramUrl(index)}
+                        className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+          
+                <p className="text-xs text-gray-500">
+                  Enter Instagram post URLs (e.g., https://www.instagram.com/p/ABC123/)
+                </p>
+              </div>
+            )}
             {formData.keywords.map((keyword, index) => (
               <input
                 key={index}

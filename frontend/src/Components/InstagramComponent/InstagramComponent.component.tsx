@@ -1,6 +1,6 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useS3Image } from "../../hooks/useS3Image";
 import { InstagramEmbed } from "react-social-media-embed";
 
@@ -10,7 +10,7 @@ interface Ad {
   user_id: string;
   title: string;
   description: string;
-  instagram_post_url: string; // Stores S3 image key/fileName OR legacy Instagram URL
+  instagram_post_url: string; // Stores S3 image key/fileName, Instagram URL, or JSON array of images
   keywords: string[];
 }
 
@@ -20,6 +20,27 @@ interface Ad {
 const isInstagramUrl = (url: string | null | undefined): boolean => {
   if (!url) return false;
   return url.includes("instagram.com") || (url.startsWith("http://") && !url.includes("s3.")) || (url.startsWith("https://") && !url.includes("s3."));
+};
+
+/**
+ * Parse images from instagram_post_url field
+ * Can be: string (single image) or JSON array (multiple images)
+ */
+const parseImages = (instagramPostUrl: string): string[] => {
+  if (!instagramPostUrl) return [];
+  
+  // Try to parse as JSON array
+  try {
+    const parsed = JSON.parse(instagramPostUrl);
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+  } catch {
+    // Not JSON, treat as single string
+  }
+  
+  // Single image (string)
+  return [instagramPostUrl];
 };
 
 interface InstagramComponentProps {
@@ -44,9 +65,13 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
   const [confirmDeletedPopup, setConfirmDeletedPopup] = useState(false);
   const [adToDelete, setAdToDelete] = useState<number | null>(null);
   
-  // Get pre-signed URL for the S3 image
-  const { imageUrl, loading: imageLoading, error: imageError } = useS3Image(
-    ad.instagram_post_url
+  // Parse images from instagram_post_url (can be single string or JSON array)
+  const images = useMemo(() => parseImages(ad.instagram_post_url), [ad.instagram_post_url]);
+  
+  // For backward compatibility: if single image, use existing hook
+  const singleImage = images.length === 1 ? images[0] : null;
+  const { imageUrl: singleImageUrl, loading: singleImageLoading, error: singleImageError } = useS3Image(
+    singleImage && !isInstagramUrl(singleImage) ? singleImage : null
   );
 
   const goToUpdateForm = (ad: Ad) => {
@@ -112,30 +137,44 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
         )}
 
         <div className="flex justify-center items-center p-1 bg-gradient-to-br from-purple-50 to-pink-50 min-h-[400px]">
-          {isInstagramUrl(ad.instagram_post_url) ? (
-            // Legacy Instagram embed for old posts
-            <div className="w-full max-w-[350px] transform scale-95 origin-center">
-              <InstagramEmbed url={ad.instagram_post_url} />
-            </div>
-          ) : imageLoading ? (
-            <div className="flex flex-col items-center justify-center w-full h-full">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
-              <p className="text-gray-600">Loading image...</p>
-            </div>
-          ) : imageError || !imageUrl ? (
+          {images.length === 0 ? (
             <div className="flex flex-col items-center justify-center w-full h-full text-gray-500">
-              <p className="text-sm">Failed to load image</p>
+              <p className="text-sm">No images available</p>
             </div>
+          ) : images.length === 1 ? (
+            // Single image display (backward compatible)
+            isInstagramUrl(images[0]) ? (
+              // Legacy Instagram embed for old posts
+              <div className="w-full max-w-[350px] transform scale-95 origin-center">
+                <InstagramEmbed url={images[0]} />
+              </div>
+            ) : singleImageLoading ? (
+              <div className="flex flex-col items-center justify-center w-full h-full">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+                <p className="text-gray-600">Loading image...</p>
+              </div>
+            ) : singleImageError || !singleImageUrl ? (
+              <div className="flex flex-col items-center justify-center w-full h-full text-gray-500">
+                <p className="text-sm">Failed to load image</p>
+              </div>
+            ) : (
+              <img
+                src={singleImageUrl}
+                alt={ad.title}
+                className="w-full max-w-[350px] h-auto object-contain rounded-lg"
+                onError={(e) => {
+                  console.error("Image failed to load:", singleImageUrl);
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            )
           ) : (
-            <img
-              src={imageUrl}
-              alt={ad.title}
-              className="w-full max-w-[350px] h-auto object-contain rounded-lg"
-              onError={(e) => {
-                console.error("Image failed to load:", imageUrl);
-                e.currentTarget.style.display = "none";
-              }}
-            />
+            // Multiple images: display in a grid/carousel
+            <div className="w-full max-w-[350px] grid grid-cols-2 gap-2 p-2">
+              {images.map((image, index) => (
+                <ImageItem key={index} image={image} title={ad.title} index={index} />
+              ))}
+            </div>
           )}
         </div>
 
@@ -204,6 +243,52 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
         </div>
       )}
     </>
+  );
+};
+
+/**
+ * Component to display a single image (S3 or Instagram)
+ */
+const ImageItem: React.FC<{ image: string; title: string; index: number }> = ({ image, title, index }) => {
+  const isInstagram = isInstagramUrl(image);
+  const { imageUrl, loading, error } = useS3Image(
+    !isInstagram ? image : null
+  );
+
+  if (isInstagram) {
+    return (
+      <div className="w-full aspect-square transform scale-95 origin-center">
+        <InstagramEmbed url={image} />
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="w-full aspect-square flex items-center justify-center bg-gray-100 rounded-lg">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  if (error || !imageUrl) {
+    return (
+      <div className="w-full aspect-square flex items-center justify-center bg-gray-100 rounded-lg text-gray-500 text-xs">
+        Failed to load
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      alt={`${title} - Image ${index + 1}`}
+      className="w-full h-full object-cover rounded-lg"
+      onError={(e) => {
+        console.error("Image failed to load:", imageUrl);
+        e.currentTarget.style.display = "none";
+      }}
+    />
   );
 };
 
