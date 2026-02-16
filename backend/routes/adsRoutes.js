@@ -13,7 +13,7 @@ const {
   getAdsByState,
   deleteAdById,
   updateAdById,
-  getS3UploadCount,
+  getUploadCounts,
 } = require("../controllers/adsController");
 
 // Handle root route or ads-related routes
@@ -48,7 +48,7 @@ router.delete("/api/users/delete/:id", deleteAdById);
 // UPDATE an ad by ID
 router.put("/api/users/update/:id", updateAdById);
 
-// GET S3 upload count for a user
-router.get("/api/ads/s3-upload-count/:user_id", getS3UploadCount);
+// GET upload counts (S3 and Instagram) for a user
+router.get("/api/ads/upload-counts/:user_id", getUploadCounts);
 
 module.exports = router;

@@ -33,10 +33,12 @@ const AddPostPage: React.FC = () => {
   
   const [uploading, setUploading] = useState(false);
   
-  // S3 upload tracking
+  // Upload tracking (S3 and Instagram)
   const [s3UploadCount, setS3UploadCount] = useState<number | null>(null);
-  const [s3UploadLoading, setS3UploadLoading] = useState(false);
+  const [instagramUrlCount, setInstagramUrlCount] = useState<number | null>(null);
+  const [uploadCountsLoading, setUploadCountsLoading] = useState(false);
   const maxS3Uploads = 3;
+  const maxInstagramUrls = 10;
 
   // Keep user_id in sync with current user
   useEffect(() => {
@@ -45,40 +47,47 @@ const AddPostPage: React.FC = () => {
     }
   }, [user?.sub]);
 
-  // Fetch S3 upload count when user is authenticated
+  // Fetch upload counts (S3 and Instagram) when user is authenticated
   useEffect(() => {
-    const fetchS3UploadCount = async () => {
+    const fetchUploadCounts = async () => {
       if (!user?.sub) {
         setS3UploadCount(null);
+        setInstagramUrlCount(null);
         return;
       }
 
-      setS3UploadLoading(true);
+      setUploadCountsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:3000/api/ads/s3-upload-count/${encodeURIComponent(user.sub)}`
+          `http://localhost:3000/api/ads/upload-counts/${encodeURIComponent(user.sub)}`
         );
         if (response.ok) {
           const data = await response.json();
-          setS3UploadCount(data.count || 0);
+          setS3UploadCount(data.s3?.count || 0);
+          setInstagramUrlCount(data.instagram?.count || 0);
         } else {
-          console.error("Failed to fetch S3 upload count");
-          setS3UploadCount(0); // Default to 0 on error
+          console.error("Failed to fetch upload counts");
+          setS3UploadCount(0);
+          setInstagramUrlCount(0);
         }
       } catch (error) {
-        console.error("Error fetching S3 upload count:", error);
-        setS3UploadCount(0); // Default to 0 on error
+        console.error("Error fetching upload counts:", error);
+        setS3UploadCount(0);
+        setInstagramUrlCount(0);
       } finally {
-        setS3UploadLoading(false);
+        setUploadCountsLoading(false);
       }
     };
 
-    fetchS3UploadCount();
+    fetchUploadCounts();
   }, [user?.sub]);
 
   // Calculate remaining uploads
-  const remainingUploads = s3UploadCount !== null ? Math.max(0, maxS3Uploads - s3UploadCount) : null;
-  const canUploadS3 = remainingUploads !== null && remainingUploads > 0;
+  const remainingS3Uploads = s3UploadCount !== null ? Math.max(0, maxS3Uploads - s3UploadCount) : null;
+  const canUploadS3 = remainingS3Uploads !== null && remainingS3Uploads > 0;
+  
+  const remainingInstagramUrls = instagramUrlCount !== null ? Math.max(0, maxInstagramUrls - instagramUrlCount) : null;
+  const canUploadInstagram = remainingInstagramUrls !== null && remainingInstagramUrls > 0;
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -263,10 +272,28 @@ const AddPostPage: React.FC = () => {
           setS3UploadCount(s3UploadCount + s3FileNames.length);
         }
       } else {
+        // Frontend validation: Check if user can upload more Instagram URLs
+        if (!canUploadInstagram) {
+          showToast("You have reached your Instagram URL limit (10 URLs).", "error");
+          setUploading(false);
+          return;
+        }
+
         // Validate Instagram URLs
         const validUrls = instagramUrls.filter((url) => url.trim() !== "");
         if (validUrls.length === 0) {
           showToast("Please enter at least one Instagram URL.", "error");
+          setUploading(false);
+          return;
+        }
+
+        // Check if adding these URLs would exceed the limit
+        if (instagramUrlCount !== null && instagramUrlCount + validUrls.length > maxInstagramUrls) {
+          const remaining = maxInstagramUrls - instagramUrlCount;
+          showToast(
+            `You can only add ${remaining} more Instagram URL${remaining !== 1 ? 's' : ''}. You have ${instagramUrlCount} URLs already.`,
+            "error"
+          );
           setUploading(false);
           return;
         }
@@ -282,6 +309,11 @@ const AddPostPage: React.FC = () => {
         }
 
         images = validUrls.map((url) => url.trim());
+        
+        // Update local count after successful upload
+        if (instagramUrlCount !== null) {
+          setInstagramUrlCount(instagramUrlCount + images.length);
+        }
       }
 
       // Use current user?.sub instead of potentially stale formData.user_id
@@ -305,18 +337,19 @@ const AddPostPage: React.FC = () => {
         setAdCreatedPopUp(true);
         showToast("Ad created successfully!", "success");
         
-        // Refresh S3 upload count if S3 images were uploaded
-        if (imageType === "s3" && user?.sub) {
+        // Refresh upload counts after successful upload
+        if (user?.sub) {
           try {
             const countResponse = await fetch(
-              `http://localhost:3000/api/ads/s3-upload-count/${encodeURIComponent(user.sub)}`
+              `http://localhost:3000/api/ads/upload-counts/${encodeURIComponent(user.sub)}`
             );
             if (countResponse.ok) {
               const countData = await countResponse.json();
-              setS3UploadCount(countData.count || 0);
+              setS3UploadCount(countData.s3?.count || 0);
+              setInstagramUrlCount(countData.instagram?.count || 0);
             }
           } catch (error) {
-            console.error("Error refreshing S3 upload count:", error);
+            console.error("Error refreshing upload counts:", error);
           }
         }
         
@@ -526,29 +559,48 @@ const AddPostPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setImageType("instagram");
-                    setSelectedFiles([]);
-                    setImagePreviews([]);
+                    if (canUploadInstagram) {
+                      setImageType("instagram");
+                      setSelectedFiles([]);
+                      setImagePreviews([]);
+                    } else {
+                      showToast("You have reached your Instagram URL limit (10 URLs).", "error");
+                    }
                   }}
+                  disabled={!canUploadInstagram}
                   className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
-                    imageType === "instagram"
+                    !canUploadInstagram
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : imageType === "instagram"
                       ? "bg-blue-500 text-white"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
                 >
-                  Instagram Links (Max 10)
+                  Instagram Links {!canUploadInstagram && "(Limit Reached)"}
                 </button>
               </div>
-              {/* Display remaining S3 uploads */}
-              {s3UploadLoading ? (
-                <p className="text-xs text-gray-500">Loading upload count...</p>
-              ) : remainingUploads !== null && (
-                <p className={`text-xs ${remainingUploads === 0 ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
-                  {remainingUploads === 0 
-                    ? "You've reached your original image upload limit (3 uploads). Please use Instagram links."
-                    : `You're allowed ${remainingUploads} more original upload${remainingUploads !== 1 ? 's' : ''} (${s3UploadCount}/${maxS3Uploads} used)`
-                  }
-                </p>
+              {/* Display remaining uploads */}
+              {uploadCountsLoading ? (
+                <p className="text-xs text-gray-500">Loading upload counts...</p>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  {remainingS3Uploads !== null && (
+                    <p className={`text-xs ${remainingS3Uploads === 0 ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
+                      {remainingS3Uploads === 0 
+                        ? "You've reached your original image upload limit (3 uploads). Please use Instagram links."
+                        : `You're allowed ${remainingS3Uploads} more original upload${remainingS3Uploads !== 1 ? 's' : ''} (${s3UploadCount}/${maxS3Uploads} used)`
+                      }
+                    </p>
+                  )}
+                  {remainingInstagramUrls !== null && (
+                    <p className={`text-xs ${remainingInstagramUrls === 0 ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
+                      {remainingInstagramUrls === 0 
+                        ? "You've reached your Instagram URL limit (10 URLs)."
+                        : `You're allowed ${remainingInstagramUrls} more Instagram URL${remainingInstagramUrls !== 1 ? 's' : ''} (${instagramUrlCount}/${maxInstagramUrls} used)`
+                      }
+                    </p>
+                  )}
+                </div>
               )}
             </div>
 
@@ -558,7 +610,7 @@ const AddPostPage: React.FC = () => {
                 <label className="text-sm font-medium text-gray-700">
                   Upload Images * (Max 3)
                 </label>
-                {Array.from({ length: 1 }).map((_, index) => (
+                {canUploadS3 && Array.from({ length: 1 }).map((_, index) => (
                   <div key={index} className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <input
