@@ -3,14 +3,13 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { locationData } from "../../Data/locations";
 import { useEffect, useState } from "react";
 import { useToast } from "../../hooks/useToast";
-import { useS3Image } from "../../hooks/useS3Image";
 
 interface Ad {
   id: number;
   user_id: string;
   title: string;
   description: string;
-  instagram_post_url: string; // Now stores S3 image key/fileName
+  instagram_post_url: string; // Stores Instagram URL
   keywords: string[];
   country?: string;
   state?: string;
@@ -25,12 +24,7 @@ const UpdatePostForm = () => {
   const { ad } = location.state as { ad: Ad };
   const countryOptions = Object.keys(locationData.countries);
   const [updateButtonClicked, setUpdateButtonClicked] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-
-  // Get current image URL for preview
-  const { imageUrl: currentImageUrl } = useS3Image(ad.instagram_post_url);
 
   const [formData, setFormData] = useState({
     id: ad.id,
@@ -40,7 +34,7 @@ const UpdatePostForm = () => {
     country: ad.country || "",
     state: ad.state || "",
     city: ad.city || "",
-    imageUrl: ad.instagram_post_url, // S3 image key/fileName
+    imageUrl: ad.instagram_post_url, // Instagram URL
     keywords: ad.keywords || ["", "", "", ""],
   });
 
@@ -67,74 +61,6 @@ const UpdatePostForm = () => {
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        showToast("Please select an image file.", "error");
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showToast("Image size must be less than 5MB.", "error");
-        return;
-      }
-
-      setSelectedFile(file);
-
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const uploadImageToS3 = async (file: File): Promise<string> => {
-    if (!user?.sub) {
-      throw new Error("User not authenticated");
-    }
-
-    // Step 1: Get pre-signed URL from backend
-    const uploadUrlResponse = await fetch(
-      "http://localhost:3000/api/s3/upload-url",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: file.name,
-          contentType: file.type,
-          userId: user.sub,
-        }),
-      }
-    );
-
-    if (!uploadUrlResponse.ok) {
-      const error = await uploadUrlResponse.json();
-      throw new Error(error.error || "Failed to get upload URL");
-    }
-
-    const { uploadUrl, fileName } = await uploadUrlResponse.json();
-
-    // Step 2: Upload file directly to S3 using pre-signed URL
-    // Note: Don't set Content-Type header - it's already in the pre-signed URL
-    // Setting it again can cause CORS issues
-    const s3Response = await fetch(uploadUrl, {
-      method: "PUT",
-      body: file,
-      // Don't set headers - the pre-signed URL already includes Content-Type
-    });
-
-    if (!s3Response.ok) {
-      throw new Error("Failed to upload image to S3");
-    }
-
-    // Step 3: Return the S3 file name/key
-    return fileName;
-  };
 
   useEffect(() => {
     console.log("Formdata is: ", formData);
@@ -189,17 +115,19 @@ const UpdatePostForm = () => {
     setUploading(true);
 
     try {
-      let imageUrl = formData.imageUrl;
-
-      // If a new file is selected, upload it first
-      if (selectedFile) {
-        const s3FileName = await uploadImageToS3(selectedFile);
-        imageUrl = s3FileName;
+      // Validate Instagram URL format if provided
+      if (formData.imageUrl && formData.imageUrl.trim() !== "") {
+        const instagramUrlPattern = /^https?:\/\/(www\.)?instagram\.com\/p\/[A-Za-z0-9_-]+\/?/;
+        if (!instagramUrlPattern.test(formData.imageUrl.trim())) {
+          showToast("Please enter a valid Instagram post URL.", "error");
+          setUploading(false);
+          return;
+        }
       }
 
       const updateData = {
         ...formData,
-        imageUrl, // S3 file name/key
+        imageUrl: formData.imageUrl.trim(), // Instagram URL
       };
 
       const response = await fetch(
@@ -330,40 +258,23 @@ const UpdatePostForm = () => {
 
             <div className="flex flex-col gap-2">
               <label
-                htmlFor="image-upload-update"
+                htmlFor="instagram-url-update"
                 className="text-sm font-medium text-gray-700"
               >
-                Update Image (optional - leave empty to keep current image)
+                Instagram Post URL *
               </label>
-              {currentImageUrl && !imagePreview && (
-                <div className="mb-2">
-                  <p className="text-xs text-gray-500 mb-2">Current image:</p>
-                  <img
-                    src={currentImageUrl}
-                    alt="Current"
-                    className="max-w-full h-48 object-contain rounded-lg border border-gray-300"
-                  />
-                </div>
-              )}
               <input
-                id="image-upload-update"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm md:text-base file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                id="instagram-url-update"
+                type="url"
+                name="imageUrl"
+                placeholder="https://www.instagram.com/p/ABC123/"
+                value={formData.imageUrl}
+                onChange={handleChange}
+                required
+                className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm md:text-base"
               />
-              {imagePreview && (
-                <div className="mt-2">
-                  <p className="text-xs text-gray-500 mb-2">New image preview:</p>
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="max-w-full h-48 object-contain rounded-lg border border-gray-300"
-                  />
-                </div>
-              )}
               <p className="text-xs text-gray-500">
-                Accepted formats: JPG, PNG, GIF. Max size: 5MB
+                Enter an Instagram post URL (e.g., https://www.instagram.com/p/ABC123/)
               </p>
             </div>
 

@@ -1,7 +1,6 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { useS3Image } from "../../hooks/useS3Image";
+import { useState } from "react";
 import { InstagramEmbed } from "react-social-media-embed";
 
 interface Ad {
@@ -10,23 +9,15 @@ interface Ad {
   user_id: string;
   title: string;
   description: string;
-  instagram_post_url: string; // Stores S3 image key/fileName, Instagram URL, or JSON array of images
+  instagram_post_url: string; // Stores Instagram URL or JSON array of Instagram URLs
   keywords: string[];
 }
 
 /**
- * Check if a string is an Instagram URL (legacy data)
+ * Parse Instagram URLs from instagram_post_url field
+ * Can be: string (single URL) or JSON array (multiple URLs)
  */
-const isInstagramUrl = (url: string | null | undefined): boolean => {
-  if (!url) return false;
-  return url.includes("instagram.com") || (url.startsWith("http://") && !url.includes("s3.")) || (url.startsWith("https://") && !url.includes("s3."));
-};
-
-/**
- * Parse images from instagram_post_url field
- * Can be: string (single image) or JSON array (multiple images)
- */
-const parseImages = (instagramPostUrl: string): string[] => {
+const parseInstagramUrls = (instagramPostUrl: string): string[] => {
   if (!instagramPostUrl) return [];
   
   // Try to parse as JSON array
@@ -39,7 +30,7 @@ const parseImages = (instagramPostUrl: string): string[] => {
     // Not JSON, treat as single string
   }
   
-  // Single image (string)
+  // Single URL (string)
   return [instagramPostUrl];
 };
 
@@ -64,17 +55,9 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [confirmDeletedPopup, setConfirmDeletedPopup] = useState(false);
   const [adToDelete, setAdToDelete] = useState<number | null>(null);
-  const [showImageModal, setShowImageModal] = useState(false);
-  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   
-  // Parse images from instagram_post_url (can be single string or JSON array)
-  const images = useMemo(() => parseImages(ad.instagram_post_url), [ad.instagram_post_url]);
-  
-  // For backward compatibility: if single image, use existing hook
-  const singleImage = images.length === 1 ? images[0] : null;
-  const { imageUrl: singleImageUrl, loading: singleImageLoading, error: singleImageError } = useS3Image(
-    singleImage && !isInstagramUrl(singleImage) ? singleImage : null
-  );
+  // Parse Instagram URLs from instagram_post_url (can be single string or JSON array)
+  const instagramUrls = parseInstagramUrls(ad.instagram_post_url);
 
   const goToUpdateForm = (ad: Ad) => {
     navigate("/update-post", { state: { ad } });
@@ -118,43 +101,6 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
     }
   };
 
-  const handleImageClick = (imageUrl: string) => {
-    setSelectedImageUrl(imageUrl);
-    setShowImageModal(true);
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closeImageModal = useCallback(() => {
-    setShowImageModal(false);
-    setSelectedImageUrl(null);
-    // Restore body scroll
-    document.body.style.overflow = 'unset';
-  }, []);
-
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Close modal if clicking on backdrop (not the image itself)
-    if (e.target === e.currentTarget) {
-      closeImageModal();
-    }
-  };
-
-  // Handle ESC key to close modal
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showImageModal) {
-        closeImageModal();
-      }
-    };
-
-    if (showImageModal) {
-      document.addEventListener('keydown', handleEscape);
-      return () => {
-        document.removeEventListener('keydown', handleEscape);
-      };
-    }
-  }, [showImageModal, closeImageModal]);
-
   return (
     <>
       <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col w-full max-w-sm transition-transform hover:scale-[1.02] hover:shadow-xl">
@@ -176,49 +122,22 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
         )}
 
         <div className="flex justify-center items-center p-1 bg-gradient-to-br from-purple-50 to-pink-50 min-h-[400px]">
-          {images.length === 0 ? (
+          {instagramUrls.length === 0 ? (
             <div className="flex flex-col items-center justify-center w-full h-full text-gray-500">
-              <p className="text-sm">No images available</p>
+              <p className="text-sm">No Instagram post available</p>
             </div>
-          ) : images.length === 1 ? (
-            // Single image display (backward compatible)
-            isInstagramUrl(images[0]) ? (
-              // Legacy Instagram embed for old posts
-              <div className="w-full max-w-[350px] transform scale-95 origin-center">
-                <InstagramEmbed url={images[0]} />
-              </div>
-            ) : singleImageLoading ? (
-              <div className="flex flex-col items-center justify-center w-full h-full">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
-                <p className="text-gray-600">Loading image...</p>
-              </div>
-            ) : singleImageError || !singleImageUrl ? (
-              <div className="flex flex-col items-center justify-center w-full h-full text-gray-500">
-                <p className="text-sm">Failed to load image</p>
-              </div>
-            ) : (
-              <img
-                src={singleImageUrl}
-                alt={ad.title}
-                className="w-full max-w-[350px] h-auto object-contain rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => handleImageClick(singleImageUrl)}
-                onError={(e) => {
-                  console.error("Image failed to load:", singleImageUrl);
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            )
+          ) : instagramUrls.length === 1 ? (
+            // Single Instagram embed
+            <div className="w-full max-w-[350px] transform scale-95 origin-center">
+              <InstagramEmbed url={instagramUrls[0]} />
+            </div>
           ) : (
-            // Multiple images: display in a grid/carousel
+            // Multiple Instagram embeds: display in a grid
             <div className="w-full max-w-[350px] grid grid-cols-2 gap-2 p-2">
-              {images.map((image, index) => (
-                <ImageItem 
-                  key={index} 
-                  image={image} 
-                  title={ad.title} 
-                  index={index}
-                  onImageClick={handleImageClick}
-                />
+              {instagramUrls.map((url, index) => (
+                <div key={index} className="w-full aspect-square transform scale-95 origin-center">
+                  <InstagramEmbed url={url} />
+                </div>
               ))}
             </div>
           )}
@@ -288,96 +207,7 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
           </div>
         </div>
       )}
-
-      {/* Image Modal Overlay */}
-      {showImageModal && selectedImageUrl && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[100] p-4"
-          onClick={handleBackdropClick}
-        >
-          <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
-            {/* Close Button */}
-            <button
-              onClick={closeImageModal}
-              className="absolute top-4 right-4 z-10 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-2 transition-all shadow-lg"
-              aria-label="Close image"
-            >
-              <svg
-                className="w-6 h-6 text-gray-800"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-            
-            {/* Image */}
-            <img
-              src={selectedImageUrl}
-              alt={ad.title}
-              className="max-w-full max-h-full object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking image
-            />
-          </div>
-        </div>
-      )}
     </>
-  );
-};
-
-/**
- * Component to display a single image (S3 or Instagram)
- */
-const ImageItem: React.FC<{ 
-  image: string; 
-  title: string; 
-  index: number;
-  onImageClick?: (imageUrl: string) => void;
-}> = ({ image, title, index, onImageClick }) => {
-  const isInstagram = isInstagramUrl(image);
-  const { imageUrl, loading, error } = useS3Image(
-    !isInstagram ? image : null
-  );
-
-  if (isInstagram) {
-    return (
-      <div className="w-full aspect-square transform scale-95 origin-center">
-        <InstagramEmbed url={image} />
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="w-full aspect-square flex items-center justify-center bg-gray-100 rounded-lg">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-      </div>
-    );
-  }
-
-  if (error || !imageUrl) {
-    return (
-      <div className="w-full aspect-square flex items-center justify-center bg-gray-100 rounded-lg text-gray-500 text-xs">
-        Failed to load
-      </div>
-    );
-  }
-
-  return (
-    <img
-      src={imageUrl}
-      alt={`${title} - Image ${index + 1}`}
-      className="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-      onClick={() => onImageClick?.(imageUrl)}
-      onError={(e) => {
-        console.error("Image failed to load:", imageUrl);
-        e.currentTarget.style.display = "none";
-      }}
-    />
   );
 };
 
