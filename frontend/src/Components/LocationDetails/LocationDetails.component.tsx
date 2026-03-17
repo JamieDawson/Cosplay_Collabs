@@ -32,7 +32,7 @@ const LocationDetails: React.FC = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:3000/api/ads/${country}/${state}/${city}`
+          `http://localhost:3000/api/ads/${country}/${state}/${city}`,
         );
         const data = await response.json();
 
@@ -59,14 +59,6 @@ const LocationDetails: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
               Details for {city}, {state}, {country}
             </h1>
-            <Link to="/places">
-              <button
-                type="button"
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-              >
-                Back to Places
-              </button>
-            </Link>
           </div>
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
             <div className="flex flex-col items-center justify-center">
@@ -87,14 +79,6 @@ const LocationDetails: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
               Details for {city}, {state}, {country}
             </h1>
-            <Link to="/places">
-              <button
-                type="button"
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-              >
-                Back to Places
-              </button>
-            </Link>
           </div>
 
           {ads.length === 0 ? (
@@ -108,10 +92,7 @@ const LocationDetails: React.FC = () => {
               columnClassName="my-masonry-grid_column"
             >
               {ads.map((ad) => (
-                <InstagramComponent
-                  key={ad.id.toString()}
-                  ad={ad}
-                />
+                <InstagramComponent key={ad.id.toString()} ad={ad} />
               ))}
             </Masonry>
           )}
@@ -131,4 +112,3 @@ SELECT * FROM ads
 WHERE country = 'USA' AND state = 'CA' AND city = 'San Francisco'
 
 */
-

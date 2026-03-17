@@ -26,7 +26,7 @@ const CountryDetails: React.FC = () => {
       if (!country) return;
       try {
         const response = await fetch(
-          `http://localhost:3000/api/ads/by-country/${encodeURIComponent(country)}`
+          `http://localhost:3000/api/ads/by-country/${encodeURIComponent(country)}`,
         );
         const data = await response.json();
         if (data.success) {
@@ -47,14 +47,6 @@ const CountryDetails: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-800 mb-4">
             All ads for {country}
           </h1>
-          <Link to="/places">
-            <button
-              type="button"
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-            >
-              Back to Places
-            </button>
-          </Link>
         </div>
 
         {ads.length === 0 ? (
