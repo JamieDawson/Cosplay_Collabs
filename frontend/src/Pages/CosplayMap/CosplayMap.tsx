@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet.markercluster";
@@ -57,26 +58,49 @@ function popupHtml(m: MarkerItem): string {
   </div>`;
 }
 
-/** Renders markers in a Leaflet MarkerClusterGroup so ads in the same area cluster (e.g. "2" in San Francisco). */
+/** Renders markers in a Leaflet MarkerClusterGroup. Clicking a cluster navigates to the location page (ads by country/state/city). */
 function MarkerClusterLayer({ markers }: { markers: MarkerItem[] }) {
   const map = useMap();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const LMC = L as typeof L & { markerClusterGroup: (opts?: object) => L.LayerGroup };
     if (!LMC.markerClusterGroup || !map) return;
 
-    const group = LMC.markerClusterGroup();
+    const group = LMC.markerClusterGroup({
+      chunkedLoading: true,
+      chunkInterval: 80,
+      chunkDelay: 50,
+    });
+
     markers.forEach((m) => {
-      const marker = L.marker(m.position);
+      const marker = L.marker(m.position, {
+        adData: m,
+      } as L.MarkerOptions);
       marker.bindPopup(popupHtml(m), { className: "cosplay-popup" });
       group.addLayer(marker);
     });
     map.addLayer(group);
 
+    const groupWithHandler = group as L.LayerGroup & { _zoomOrSpiderfy?: (e: L.LeafletEvent) => void };
+    if (typeof groupWithHandler._zoomOrSpiderfy === "function") {
+      group.off("clusterclick", groupWithHandler._zoomOrSpiderfy, group);
+    }
+    group.on("clusterclick", (e: L.LeafletEvent) => {
+      const cluster = (e as unknown as { layer: { getAllChildMarkers: () => L.Marker[] } }).layer;
+      const children = cluster.getAllChildMarkers();
+      const first = children[0];
+      const adData = (first?.options as { adData?: MarkerItem })?.adData;
+      if (adData?.country && adData?.state && adData?.city) {
+        const path = `/places/${encodeURIComponent(adData.country)}/${encodeURIComponent(adData.state)}/${encodeURIComponent(adData.city)}`;
+        navigate(path);
+      }
+    });
+
     return () => {
       map.removeLayer(group);
     };
-  }, [map, markers]);
+  }, [map, markers, navigate]);
 
   return null;
 }
@@ -142,8 +166,8 @@ const CosplayMap: React.FC = () => {
         Cosplayer Locations Map
       </h1>
       <p className="text-sm md:text-base text-gray-600 mb-4 text-center max-w-2xl mx-auto">
-        Markers are shown for each ad that has a location (lat/lng) stored. Ads
-        in the same area cluster together when zoomed out.
+        Click a cluster number (e.g. 3) to go to the page that lists all ads in
+        that location. Click a single marker to see its popup.
       </p>
 
       {loading && (
