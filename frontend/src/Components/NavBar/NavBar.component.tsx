@@ -67,6 +67,14 @@ const NavBar: React.FC = () => {
           </li>
           <li>
             <Link
+              to="/cosplay-map"
+              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium text-sm transition-colors shadow-md"
+            >
+              map
+            </Link>
+          </li>
+          <li>
+            <Link
               to="/tags-page"
               className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium text-sm transition-colors shadow-md"
             >

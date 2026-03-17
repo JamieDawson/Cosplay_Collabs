@@ -14,12 +14,16 @@ const {
   deleteAdById,
   updateAdById,
   getUploadCounts,
+  getAllAds,
 } = require("../controllers/adsController");
 
 // Handle root route or ads-related routes
 router.get("/", (req, res) => {
   res.send("Welcome to the Ads API");
 });
+
+// GET all ads (for map and global listings)
+router.get("/api/ads/all", getAllAds);
 
 // POST route to create a new ad
 router.post("/api/ads", createAd);

@@ -4,6 +4,10 @@ import { Auth0Provider } from "@auth0/auth0-react";
 import App from "./App";
 import { UserProvider } from "./UserContext";
 import ErrorBoundary from "./Components/ErrorBoundary/ErrorBoundary.component";
+import "leaflet/dist/leaflet.css";
+import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./index.css";
 
 const domain = process.env.REACT_APP_AUTH0_DOMAIN!;
@@ -27,5 +31,5 @@ root.render(
         </UserProvider>
       </Auth0Provider>
     </ErrorBoundary>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

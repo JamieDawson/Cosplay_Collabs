@@ -435,6 +435,21 @@ const getAdsCountByCountry = async (req, res) => {
   }
 };
 
+// Get all ads with basic fields (used by map)
+const getAllAds = async (req, res) => {
+  try {
+    const query = `
+      SELECT id, user_id, title, description, country, state, city, instagram_post_url, keywords
+      FROM ads;
+    `;
+    const result = await pool.query(query);
+    res.status(200).json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error("Error fetching all ads:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   createAd,
   deleteAdById,
@@ -446,5 +461,6 @@ module.exports = {
   getAdsByTag,
   getAdsByState,
   getUploadCounts,
+  getAllAds,
 };
 

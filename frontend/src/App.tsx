@@ -12,6 +12,7 @@ import UpdatePostForm from "./Components/UpdatePostForm/UpdatePostForm.component
 import TagsPage from "./Pages/TagsPage/TagsPage";
 import StateDetails from "./Components/StateDetails/StateDetails.component";
 import PostLoginRedirect from "./PostLoginRedirect";
+import CosplayMap from "./Pages/CosplayMap/CosplayMap";
 
 function App() {
   return (
@@ -37,6 +38,15 @@ function App() {
               </ErrorBoundary>
             }
           />
+          <Route
+            path="/cosplay-map"
+            element={
+              <ErrorBoundary>
+                <CosplayMap />
+              </ErrorBoundary>
+            }
+          />
+
           <Route
             path="/add-post"
             element={
