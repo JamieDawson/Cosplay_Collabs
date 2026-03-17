@@ -7,7 +7,7 @@ import { useToast } from "../../hooks/useToast";
 const geocodeLocation = async (
   city: string,
   state: string,
-  country: string
+  country: string,
 ): Promise<{ lat: number; lng: number } | null> => {
   const query = `${city}, ${state}, ${country}`.trim();
   if (!query.replace(/,/g, "").trim()) return null;
@@ -19,7 +19,7 @@ const geocodeLocation = async (
         "Accept-Language": "en",
         "User-Agent": "CosplayCollabs/1.0 (https://github.com/cosplay-collabs)",
       },
-    }
+    },
   );
   const data = await res.json();
   if (!data || !Array.isArray(data) || data.length === 0) return null;
@@ -37,7 +37,7 @@ const AddPostPage: React.FC = () => {
   const [adCreatedPopup, setAdCreatedPopUp] = useState(false);
   const maxLengthDescription = 200;
   const maxLengthTitle = 65;
-  
+
   const [formData, setFormData] = useState({
     user_id: user?.sub || "", // User ID creating the ad
     title: "",
@@ -48,14 +48,16 @@ const AddPostPage: React.FC = () => {
     imageUrl: "", // For single image (legacy support)
     keywords: ["", "", "", ""],
   });
-  
+
   // Instagram links: array of URLs (max 10)
   const [instagramUrls, setInstagramUrls] = useState<string[]>([""]);
-  
+
   const [uploading, setUploading] = useState(false);
-  
+
   // Upload tracking (Instagram only)
-  const [instagramUrlCount, setInstagramUrlCount] = useState<number | null>(null);
+  const [instagramUrlCount, setInstagramUrlCount] = useState<number | null>(
+    null,
+  );
   const [uploadCountsLoading, setUploadCountsLoading] = useState(false);
   const maxInstagramUrls = 10;
 
@@ -77,7 +79,7 @@ const AddPostPage: React.FC = () => {
       setUploadCountsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:3000/api/ads/upload-counts/${encodeURIComponent(user.sub)}`
+          `http://localhost:3000/api/ads/upload-counts/${encodeURIComponent(user.sub)}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -98,13 +100,17 @@ const AddPostPage: React.FC = () => {
   }, [user?.sub]);
 
   // Calculate remaining uploads
-  const remainingInstagramUrls = instagramUrlCount !== null ? Math.max(0, maxInstagramUrls - instagramUrlCount) : null;
-  const canUploadInstagram = remainingInstagramUrls !== null && remainingInstagramUrls > 0;
+  const remainingInstagramUrls =
+    instagramUrlCount !== null
+      ? Math.max(0, maxInstagramUrls - instagramUrlCount)
+      : null;
+  const canUploadInstagram =
+    remainingInstagramUrls !== null && remainingInstagramUrls > 0;
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
 
@@ -166,7 +172,10 @@ const AddPostPage: React.FC = () => {
     try {
       // Frontend validation: Check if user can upload more Instagram URLs
       if (!canUploadInstagram) {
-        showToast("You have reached your Instagram URL limit (10 URLs).", "error");
+        showToast(
+          "You have reached your Instagram URL limit (10 URLs).",
+          "error",
+        );
         setUploading(false);
         return;
       }
@@ -180,18 +189,22 @@ const AddPostPage: React.FC = () => {
       }
 
       // Check if adding these URLs would exceed the limit
-      if (instagramUrlCount !== null && instagramUrlCount + validUrls.length > maxInstagramUrls) {
+      if (
+        instagramUrlCount !== null &&
+        instagramUrlCount + validUrls.length > maxInstagramUrls
+      ) {
         const remaining = maxInstagramUrls - instagramUrlCount;
         showToast(
-          `You can only add ${remaining} more Instagram URL${remaining !== 1 ? 's' : ''}. You have ${instagramUrlCount} URLs already.`,
-          "error"
+          `You can only add ${remaining} more Instagram URL${remaining !== 1 ? "s" : ""}. You have ${instagramUrlCount} URLs already.`,
+          "error",
         );
         setUploading(false);
         return;
       }
 
       // Validate Instagram URL format
-      const instagramUrlPattern = /^https?:\/\/(www\.)?instagram\.com\/p\/[A-Za-z0-9_-]+\/?/;
+      const instagramUrlPattern =
+        /^https?:\/\/(www\.)?instagram\.com\/p\/[A-Za-z0-9_-]+\/?/;
       for (const url of validUrls) {
         if (!instagramUrlPattern.test(url.trim())) {
           showToast("Please enter valid Instagram post URLs.", "error");
@@ -201,7 +214,7 @@ const AddPostPage: React.FC = () => {
       }
 
       const images = validUrls.map((url) => url.trim());
-      
+
       // Update local count after successful upload
       if (instagramUrlCount !== null) {
         setInstagramUrlCount(instagramUrlCount + images.length);
@@ -214,7 +227,7 @@ const AddPostPage: React.FC = () => {
         const coords = await geocodeLocation(
           formData.city,
           formData.state,
-          formData.country
+          formData.country,
         );
         if (coords) {
           lat = coords.lat;
@@ -243,12 +256,12 @@ const AddPostPage: React.FC = () => {
       if (response.ok) {
         setAdCreatedPopUp(true);
         showToast("Ad created successfully!", "success");
-        
+
         // Refresh upload counts after successful upload
         if (user?.sub) {
           try {
             const countResponse = await fetch(
-              `http://localhost:3000/api/ads/upload-counts/${encodeURIComponent(user.sub)}`
+              `http://localhost:3000/api/ads/upload-counts/${encodeURIComponent(user.sub)}`,
             );
             if (countResponse.ok) {
               const countData = await countResponse.json();
@@ -258,7 +271,7 @@ const AddPostPage: React.FC = () => {
             console.error("Error refreshing upload counts:", error);
           }
         }
-        
+
         // Reset the form data after successful ad creation
         setFormData({
           user_id: user?.sub || "",
@@ -275,7 +288,7 @@ const AddPostPage: React.FC = () => {
         const errorData = await response.json();
         showToast(
           errorData.error || "Failed to create ad. Please try again.",
-          "error"
+          "error",
         );
       }
     } catch (error) {
@@ -284,7 +297,7 @@ const AddPostPage: React.FC = () => {
         error instanceof Error
           ? error.message
           : "An error occurred while creating the ad. Please try again.",
-        "error"
+        "error",
       );
     } finally {
       setUploading(false);
@@ -302,7 +315,7 @@ const AddPostPage: React.FC = () => {
             locationData.countries as {
               [key: string]: { states: Record<string, string[]> };
             }
-          )[formData.country].states
+          )[formData.country].states,
         )
       : [];
 
@@ -427,21 +440,24 @@ const AddPostPage: React.FC = () => {
                 </option>
               ))}
             </select>
-            
+
             {/* Instagram URLs Section */}
             <div className="flex flex-col gap-4">
               <label className="text-sm font-medium text-gray-700">
                 Instagram Post URLs * (Max 10)
               </label>
               {uploadCountsLoading ? (
-                <p className="text-xs text-gray-500">Loading upload counts...</p>
+                <p className="text-xs text-gray-500">
+                  Loading upload counts...
+                </p>
               ) : (
                 remainingInstagramUrls !== null && (
-                  <p className={`text-xs ${remainingInstagramUrls === 0 ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
-                    {remainingInstagramUrls === 0 
+                  <p
+                    className={`text-xs ${remainingInstagramUrls === 0 ? "text-red-600 font-semibold" : "text-gray-600"}`}
+                  >
+                    {remainingInstagramUrls === 0
                       ? "You've reached your Instagram URL limit (10 URLs)."
-                      : `You're allowed ${remainingInstagramUrls} more Instagram URL${remainingInstagramUrls !== 1 ? 's' : ''} (${instagramUrlCount}/${maxInstagramUrls} used)`
-                    }
+                      : `You're allowed ${remainingInstagramUrls} more Instagram URL${remainingInstagramUrls !== 1 ? "s" : ""} (${instagramUrlCount}/${maxInstagramUrls} used)`}
                   </p>
                 )
               )}
@@ -451,7 +467,9 @@ const AddPostPage: React.FC = () => {
                     type="url"
                     placeholder={`Instagram URL ${index + 1} (e.g., https://www.instagram.com/p/ABC123/)`}
                     value={url}
-                    onChange={(e) => handleInstagramUrlChange(index, e.target.value)}
+                    onChange={(e) =>
+                      handleInstagramUrlChange(index, e.target.value)
+                    }
                     disabled={!canUploadInstagram && url === ""}
                     className="flex-1 p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm md:text-base"
                   />
@@ -466,17 +484,10 @@ const AddPostPage: React.FC = () => {
                   )}
                 </div>
               ))}
-              {instagramUrls.length < maxInstagramUrls && canUploadInstagram && (
-                <button
-                  type="button"
-                  onClick={addInstagramUrlField}
-                  className="w-full py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-                >
-                  + Add Another URL
-                </button>
-              )}
+
               <p className="text-xs text-gray-500">
-                Enter Instagram post URLs (e.g., https://www.instagram.com/p/ABC123/)
+                Enter Instagram post URLs (e.g.,
+                https://www.instagram.com/p/ABC123/)
               </p>
             </div>
             {formData.keywords.map((keyword, index) => (
