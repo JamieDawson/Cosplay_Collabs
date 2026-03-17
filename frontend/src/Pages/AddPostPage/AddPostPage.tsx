@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { locationData } from "../../Data/locations";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useToast } from "../../hooks/useToast";
 
@@ -304,38 +303,6 @@ const AddPostPage: React.FC = () => {
     }
   };
 
-  // Get dynamic options based on selections
-  const countryOptions = Object.keys(locationData.countries);
-
-  // Safely access state options
-  const stateOptions =
-    formData.country && formData.country in locationData.countries
-      ? Object.keys(
-          (
-            locationData.countries as {
-              [key: string]: { states: Record<string, string[]> };
-            }
-          )[formData.country].states,
-        )
-      : [];
-
-  const cityOptions =
-    formData.state &&
-    formData.country &&
-    formData.country in locationData.countries &&
-    formData.state in
-      (
-        locationData.countries as {
-          [key: string]: { states: Record<string, string[]> };
-        }
-      )[formData.country].states
-      ? (
-          locationData.countries as {
-            [key: string]: { states: Record<string, string[]> };
-          }
-        )[formData.country].states[formData.state]
-      : [];
-
   const closeAdCreatedPopup = () => {
     setAdCreatedPopUp(false);
   };
@@ -396,50 +363,30 @@ const AddPostPage: React.FC = () => {
             <p className="text-sm text-gray-500 text-right">
               {formData.description.length} / {maxLengthDescription}
             </p>
-            <select
+            <input
               name="country"
+              placeholder="Country (e.g., USA, Canada, UK)"
               value={formData.country}
               onChange={handleChange}
               required
               className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm md:text-base"
-            >
-              <option value="">Select Country</option>
-              {countryOptions.map((country) => (
-                <option key={country} value={country}>
-                  {country}
-                </option>
-              ))}
-            </select>
-            <select
+            />
+            <input
               name="state"
+              placeholder="State / Region (e.g., CA, Ontario)"
               value={formData.state}
               onChange={handleChange}
-              disabled={!formData.country}
               required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm md:text-base"
-            >
-              <option value="">Select State</option>
-              {stateOptions.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
-              ))}
-            </select>
-            <select
+              className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm md:text-base"
+            />
+            <input
               name="city"
+              placeholder="City (e.g., San Francisco)"
               value={formData.city}
               onChange={handleChange}
-              disabled={!formData.state}
               required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm md:text-base"
-            >
-              <option value="">Select City</option>
-              {cityOptions.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
+              className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm md:text-base"
+            />
 
             {/* Instagram URLs Section */}
             <div className="flex flex-col gap-4">
