@@ -7,12 +7,10 @@ const AboutPage: React.FC = () => {
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 mb-8">
           <h1 className="text-5xl font-bold text-gray-800 mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            About Cosplay Collabs
+            Find Your Next Cosplay Collab
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-            Welcome to Cosplay Collabs! This platform is designed for cosplayers to collaborate and connect. 
-            Showcase your cosplay through ads and find like-minded cosplayers to join forces with. 
-            Perfect for sharing your passion, forming groups, or planning themed events!
+            Post a cosplay ad, pin yourself on the map, and team up with cosplayers anywhere.
           </p>
         </div>
 
@@ -28,18 +26,16 @@ const AboutPage: React.FC = () => {
               <div>
                 <h3 className="font-semibold text-lg mb-2">Create an Account</h3>
                 <p className="text-gray-600">
-                  Click the <strong>Sign Up</strong> button in the navigation bar to create your account. 
-                  You'll need to complete your profile after signing up to start creating ads.
+                  Hit <strong>Sign Up</strong> in the top bar and log in.
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-4 p-4 bg-pink-50 rounded-lg">
               <span className="text-2xl">✏️</span>
               <div>
-                <h3 className="font-semibold text-lg mb-2">Complete Your Profile</h3>
+                <h3 className="font-semibold text-lg mb-2">Pick a Username</h3>
                 <p className="text-gray-600">
-                  After signing up, you'll be prompted to complete your profile. Add your username and other details 
-                  to personalize your account and make it easier for others to find you.
+                  Finish the profile step so others can click your name and find you.
                 </p>
               </div>
             </div>
@@ -54,26 +50,26 @@ const AboutPage: React.FC = () => {
           </h2>
           <div className="space-y-4 text-gray-700">
             <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-l-4 border-purple-500">
-              <h3 className="font-semibold text-lg mb-3">Navigate to "Add Post"</h3>
+              <h3 className="font-semibold text-lg mb-3">Go to “Add Post”</h3>
               <p className="text-gray-600 mb-3">
-                Click on <Link to="/add-post" className="text-purple-600 hover:text-purple-700 font-semibold underline">Add Post</Link> in the navigation bar to create a new cosplay collaboration ad.
+                Click <Link to="/add-post" className="text-purple-600 hover:text-purple-700 font-semibold underline">Add Post</Link> to start a new cosplay ad in seconds.
               </p>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="p-4 bg-blue-50 rounded-lg">
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-blue-600">📸</span> Instagram Post URL
+                  <span className="text-blue-600">📸</span> Instagram post
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Paste the URL of your Instagram post showcasing your cosplay. This will be displayed as an embed on your ad.
+                  Paste a public Instagram post and we’ll embed it automatically.
                 </p>
               </div>
               <div className="p-4 bg-green-50 rounded-lg">
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-green-600">📝</span> Title & Description
+                  <span className="text-green-600">📝</span> Title & blurb
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Give your ad a catchy title (max 65 characters) and describe what you're looking for (max 200 characters).
+                  Write a short title and a quick description of the collab you want.
                 </p>
               </div>
               <div className="p-4 bg-yellow-50 rounded-lg">
@@ -81,15 +77,15 @@ const AboutPage: React.FC = () => {
                   <span className="text-yellow-600">📍</span> Location
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Select your country, state, and city so others can find cosplayers in their area.
+                  Type your country, state, and city and we’ll drop a pin on the map.
                 </p>
               </div>
               <div className="p-4 bg-purple-50 rounded-lg">
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-purple-600">🏷️</span> Keywords/Tags
+                  <span className="text-purple-600">🏷️</span> Tags
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Add up to 4 keywords or tags (e.g., "anime", "convention", "photoshoot") to help others find your ad.
+                  Add a few simple tags (like “anime” or “photoshoot”) so people can find you fast.
                 </p>
               </div>
             </div>
@@ -105,30 +101,26 @@ const AboutPage: React.FC = () => {
           <div className="space-y-6">
             <div className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl">
               <h3 className="font-semibold text-xl mb-3 flex items-center gap-2">
-                <span className="text-2xl">🏠</span> Home Page
+                <span className="text-2xl">🏠</span> Home
               </h3>
               <p className="text-gray-700 mb-3">
-                The <Link to="/" className="text-purple-600 hover:text-purple-700 font-semibold underline">Home page</Link> displays the most recent ads from all users. 
-                Browse through cosplay posts and click on any that interest you to see more details.
+                The <Link to="/" className="text-purple-600 hover:text-purple-700 font-semibold underline">Home</Link> feed shows the newest cosplay ads from everyone.
               </p>
             </div>
             <div className="p-6 bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl">
               <h3 className="font-semibold text-xl mb-3 flex items-center gap-2">
-                <span className="text-2xl">🔍</span> Search by Tags
+                <span className="text-2xl">🔍</span> Search by tags
               </h3>
               <p className="text-gray-700 mb-3">
-                Use the <Link to="/tags-page" className="text-purple-600 hover:text-purple-700 font-semibold underline">Search for ads</Link> feature to find collaborations by keywords. 
-                Simply type in a tag (like "anime" or "convention") and browse matching ads. You can also click on any tag 
-                in an ad to see other posts with the same tag.
+                Use <Link to="/tags-page" className="text-purple-600 hover:text-purple-700 font-semibold underline">Search tags</Link> to jump straight to ads that match a keyword.
               </p>
             </div>
             <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl">
               <h3 className="font-semibold text-xl mb-3 flex items-center gap-2">
-                <span className="text-2xl">🗺️</span> Browse by Location
+                <span className="text-2xl">🗺️</span> Map
               </h3>
               <p className="text-gray-700 mb-3">
-                Visit the <Link to="/places" className="text-purple-600 hover:text-purple-700 font-semibold underline">Places</Link> page to find cosplayers in specific locations. 
-                Navigate by country → state → city to see all ads in that area. Perfect for finding local collaborations!
+                Open the <Link to="/cosplay-map" className="text-purple-600 hover:text-purple-700 font-semibold underline">map</Link> to see every ad as a pin and tap a city to view its posts.
               </p>
             </div>
           </div>
@@ -142,23 +134,16 @@ const AboutPage: React.FC = () => {
           </h2>
           <div className="space-y-4">
             <div className="p-5 bg-gray-50 rounded-lg border-l-4 border-gray-400">
-              <h3 className="font-semibold text-lg mb-2">📋 Your Profile</h3>
+              <h3 className="font-semibold text-lg mb-2">📋 Your profile</h3>
               <p className="text-gray-600 mb-3">
-                Visit your <strong>Profile</strong> page to see all your ads in one place. From here you can:
+                Your profile shows all your ads so you can quickly update or delete them.
               </p>
-              <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-                <li>View all your posted collaborations</li>
-                <li>Update your existing ads</li>
-                <li>Delete ads you no longer need</li>
-                <li>Manage your account settings</li>
-              </ul>
             </div>
             <div className="p-5 bg-red-50 rounded-lg border-l-4 border-red-400">
-              <h3 className="font-semibold text-lg mb-2">⚠️ Important Notes</h3>
+              <h3 className="font-semibold text-lg mb-2">⚠️ Quick notes</h3>
               <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-                <li>You can only edit or delete your own ads</li>
-                <li>Deleting your profile is permanent and cannot be undone</li>
-                <li>Make sure your Instagram post is set to public for the embed to work</li>
+                <li>You can only edit or delete your own ads.</li>
+                <li>Make sure your Instagram post is public so it loads.</li>
               </ul>
             </div>
           </div>
@@ -171,20 +156,20 @@ const AboutPage: React.FC = () => {
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <p className="font-semibold mb-2">Use Specific Tags</p>
-              <p className="text-sm opacity-90">Be specific with your keywords to attract the right collaborators.</p>
+              <p className="font-semibold mb-2">Use clear tags</p>
+              <p className="text-sm opacity-90">Short, specific tags help the right people find you.</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <p className="font-semibold mb-2">Keep Descriptions Clear</p>
-              <p className="text-sm opacity-90">Clearly state what kind of collaboration you're looking for.</p>
+              <p className="font-semibold mb-2">Say what you need</p>
+              <p className="text-sm opacity-90">One or two sentences about the collab is plenty.</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <p className="font-semibold mb-2">Update Regularly</p>
-              <p className="text-sm opacity-90">Keep your ads current and update them as your needs change.</p>
+              <p className="font-semibold mb-2">Keep it fresh</p>
+              <p className="text-sm opacity-90">Edit or remove old ads so people see what’s current.</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <p className="font-semibold mb-2">Engage with Tags</p>
-              <p className="text-sm opacity-90">Click on tags in ads to discover similar collaborations.</p>
+              <p className="font-semibold mb-2">Follow tags</p>
+              <p className="text-sm opacity-90">Click tags you like to discover more similar ads.</p>
             </div>
           </div>
         </div>
