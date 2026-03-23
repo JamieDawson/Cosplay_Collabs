@@ -49,6 +49,8 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const [finalWarningPopup, setFinalWarningPopup] = useState(false);
   const [popUpAfterDeleting, setPopUpAfterDeleting] = useState(false);
+  /** Must match username exactly before delete is allowed */
+  const [deleteUsernameConfirm, setDeleteUsernameConfirm] = useState("");
 
   /**
    * Fetch user data based on the username in URL
@@ -123,11 +125,14 @@ function Profile() {
     }
   }, [customUserData?.auth0_id, user?.sub, username]);
 
-  /**
-   * Show the warning popup for account deletion
-   */
-  const showFinalWarning = () => {
-    setFinalWarningPopup((prev) => !prev);
+  const openDeleteModal = () => {
+    setDeleteUsernameConfirm("");
+    setFinalWarningPopup(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteUsernameConfirm("");
+    setFinalWarningPopup(false);
   };
 
   /**
@@ -135,6 +140,12 @@ function Profile() {
    */
   const deleteCurrentUserProfile = async () => {
     if (!user?.sub) return;
+
+    const expected =
+      customUserData?.username?.trim() || username?.trim() || "";
+    if (!expected || deleteUsernameConfirm.trim() !== expected) {
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -144,6 +155,8 @@ function Profile() {
         },
       );
       if (response.ok) {
+        setFinalWarningPopup(false);
+        setDeleteUsernameConfirm("");
         setPopUpAfterDeleting(true);
       } else {
         showToast("Failed to delete account. Please try again.", "error");
@@ -186,6 +199,11 @@ function Profile() {
     Boolean(isAuthenticated && customUserData?.auth0_id === user?.sub);
   const displayUsername =
     customUserData?.username?.trim() || username?.trim() || "cosplayer";
+  const usernameToConfirmDeletion =
+    customUserData?.username?.trim() || username?.trim() || "";
+  const deleteNameMatches =
+    usernameToConfirmDeletion.length > 0 &&
+    deleteUsernameConfirm.trim() === usernameToConfirmDeletion;
 
   return (
     <>
@@ -219,7 +237,7 @@ function Profile() {
                 {isOwnProfile && (
                   <button
                     type="button"
-                    onClick={showFinalWarning}
+                    onClick={openDeleteModal}
                     className="shrink-0 self-start sm:self-auto px-5 py-2.5 rounded-xl text-sm font-semibold text-red-700 bg-red-50 border border-red-100 hover:bg-red-100 hover:border-red-200 transition-colors"
                   >
                     Delete profile
@@ -242,30 +260,69 @@ function Profile() {
         </div>
 
         {finalWarningPopup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 relative">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div
+              className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full relative"
+              role="dialog"
+              aria-labelledby="delete-profile-title"
+              aria-describedby="delete-profile-desc"
+            >
               <button
+                type="button"
                 className="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 rounded-lg p-2 transition-colors text-gray-700 font-bold"
-                onClick={showFinalWarning}
+                onClick={closeDeleteModal}
+                aria-label="Close"
               >
                 ✕
               </button>
-              <p className="text-lg font-semibold text-gray-800 mb-6 text-center">
-                Are you sure you want to delete your profile? This cannot be
-                reversed.
+              <h2
+                id="delete-profile-title"
+                className="text-lg font-semibold text-gray-800 mb-2 text-center pr-8"
+              >
+                Delete your profile?
+              </h2>
+              <p
+                id="delete-profile-desc"
+                className="text-sm text-gray-600 mb-5 text-center"
+              >
+                This cannot be undone. Type your username{" "}
+                <span className="font-mono font-semibold text-gray-900">
+                  {usernameToConfirmDeletion || displayUsername}
+                </span>{" "}
+                below to confirm.
               </p>
-              <div className="flex gap-3 justify-center">
+              <label
+                htmlFor="delete-username-input"
+                className="block text-xs font-medium text-gray-500 mb-1.5"
+              >
+                Your username
+              </label>
+              <input
+                id="delete-username-input"
+                type="text"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                value={deleteUsernameConfirm}
+                onChange={(e) => setDeleteUsernameConfirm(e.target.value)}
+                placeholder={usernameToConfirmDeletion || displayUsername}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none text-gray-900 mb-6"
+              />
+              <div className="flex flex-col-reverse sm:flex-row gap-3 justify-center">
                 <button
-                  className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
-                  onClick={deleteCurrentUserProfile}
+                  type="button"
+                  className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                  onClick={closeDeleteModal}
                 >
-                  Yes, delete it
+                  Cancel
                 </button>
                 <button
-                  className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-medium"
-                  onClick={showFinalWarning}
+                  type="button"
+                  className="px-6 py-2 rounded-lg transition-colors font-medium text-white bg-red-500 hover:bg-red-600 disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:bg-red-500"
+                  onClick={deleteCurrentUserProfile}
+                  disabled={!deleteNameMatches}
                 >
-                  No, keep it
+                  Yes, delete my profile
                 </button>
               </div>
             </div>
