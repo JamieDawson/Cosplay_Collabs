@@ -25,7 +25,17 @@ const HomePage: React.FC = () => {
     const getAdsForFrontPage = async () => {
       setLoading(true);
       try {
-        const response = await fetch(apiUrl("/api/ads/most-recent"));
+        const url = apiUrl("/api/ads/most-recent");
+        const response = await fetch(url);
+        if (!response.ok) {
+          console.error(
+            "Failed to load ads:",
+            response.status,
+            response.statusText,
+            url,
+          );
+          return;
+        }
         const data = await response.json();
         if (data.success) {
           setFrontPageAds(data.data);

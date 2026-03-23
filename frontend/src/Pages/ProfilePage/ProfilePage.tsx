@@ -182,45 +182,52 @@ function Profile() {
     640: 1,
   };
 
+  const isOwnProfile =
+    Boolean(isAuthenticated && customUserData?.auth0_id === user?.sub);
+  const displayUsername =
+    customUserData?.username?.trim() || username?.trim() || "cosplayer";
+
   return (
     <>
       <ToastContainer />
       <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-50 py-8 px-4">
         <div className="max-w-7xl mx-auto">
-          {/* Profile Header */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">
-              {isAuthenticated && customUserData?.auth0_id === user?.sub && (
-                <span>
-                  Welcome,{" "}
-                  {customUserData?.full_name || user?.name || "unknown"}
-                </span>
-              )}
-            </h2>
-            <div className="space-y-2 text-gray-600">
-              <p className="text-lg">
-                <span className="font-semibold">Username:</span>{" "}
-                {customUserData?.username || "Not set"}
-              </p>
-              <p className="text-sm text-gray-500">
-                <span className="font-semibold">ID:</span>{" "}
-                {customUserData?.auth0_id || user?.sub || "unknown"}
-              </p>
-              <p className="text-sm text-gray-500">
-                <span className="font-semibold">Email:</span>{" "}
-                {customUserData?.email || user?.email || "unknown"}
-              </p>
+          {/* Profile header — username hero, no full name */}
+          <header className="mb-10 rounded-2xl bg-white shadow-lg shadow-gray-200/60 border border-white/80 overflow-hidden ring-1 ring-gray-100">
+            <div
+              className="h-1.5 w-full bg-gradient-to-r from-sky-500 via-violet-500 to-pink-500"
+              aria-hidden
+            />
+            <div className="px-6 py-8 sm:px-10 sm:py-10">
+              <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0 space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
+                    Profile
+                  </p>
+                  <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 break-words">
+                    <span className="bg-gradient-to-r from-sky-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">
+                      @{displayUsername}
+                    </span>
+                  </h1>
+                  {isOwnProfile && (
+                    <p className="text-sm text-gray-500 max-w-md">
+                      You&apos;re viewing your public profile — posts below are
+                      what others see here.
+                    </p>
+                  )}
+                </div>
+                {isOwnProfile && (
+                  <button
+                    type="button"
+                    onClick={showFinalWarning}
+                    className="shrink-0 self-start sm:self-auto px-5 py-2.5 rounded-xl text-sm font-semibold text-red-700 bg-red-50 border border-red-100 hover:bg-red-100 hover:border-red-200 transition-colors"
+                  >
+                    Delete profile
+                  </button>
+                )}
+              </div>
             </div>
-
-            {customUserData?.auth0_id === user?.sub && (
-              <button
-                onClick={showFinalWarning}
-                className="mt-6 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
-              >
-                Delete your profile
-              </button>
-            )}
-          </div>
+          </header>
 
           {/* Render user's ads */}
           <Masonry
