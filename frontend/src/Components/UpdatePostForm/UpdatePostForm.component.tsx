@@ -6,6 +6,7 @@ import {
   geocodeLocationWithCanonical,
   mergeUserLocationWithCanonical,
 } from "../../utils/nominatimGeocode";
+import { apiUrl } from "../../config/api";
 
 interface Ad {
   id: number;
@@ -136,7 +137,7 @@ const UpdatePostForm = () => {
       };
 
       const response = await fetch(
-        `http://localhost:3000/api/users/update/${formData.id}`,
+        apiUrl(`/api/users/update/${formData.id}`),
         {
           method: "PUT",
           headers: {

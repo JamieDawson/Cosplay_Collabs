@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import axios from "axios";
+import { apiUrl } from "./config/api";
 
 type UserContextType = {
   username: string | null;
@@ -27,7 +28,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         try {
           // Fetch from backend (source of truth)
           const response = await axios.get(
-            `http://localhost:3000/api/users/${encodeURIComponent(user.sub)}`
+            apiUrl(`/api/users/${encodeURIComponent(user.sub)}`),
           );
 
           if (response.data.success && response.data.user?.username) {

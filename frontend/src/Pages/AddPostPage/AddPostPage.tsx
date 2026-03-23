@@ -5,6 +5,7 @@ import {
   geocodeLocationWithCanonical,
   mergeUserLocationWithCanonical,
 } from "../../utils/nominatimGeocode";
+import { apiUrl } from "../../config/api";
 
 const AddPostPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth0();
@@ -54,7 +55,7 @@ const AddPostPage: React.FC = () => {
       setUploadCountsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:3000/api/ads/upload-counts/${encodeURIComponent(user.sub)}`,
+          apiUrl(`/api/ads/upload-counts/${encodeURIComponent(user.sub)}`),
         );
         if (response.ok) {
           const data = await response.json();
@@ -239,7 +240,7 @@ const AddPostPage: React.FC = () => {
       };
 
       // Create the ad with the images
-      const response = await fetch("http://localhost:3000/api/ads", {
+      const response = await fetch(apiUrl("/api/ads"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(adData),
@@ -253,7 +254,7 @@ const AddPostPage: React.FC = () => {
         if (user?.sub) {
           try {
             const countResponse = await fetch(
-              `http://localhost:3000/api/ads/upload-counts/${encodeURIComponent(user.sub)}`,
+              apiUrl(`/api/ads/upload-counts/${encodeURIComponent(user.sub)}`),
             );
             if (countResponse.ok) {
               const countData = await countResponse.json();

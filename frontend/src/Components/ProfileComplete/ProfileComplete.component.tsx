@@ -4,6 +4,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../UserContext"; // ✅ Make sure path is correct
 import { useToast } from "../../hooks/useToast";
+import { apiUrl } from "../../config/api";
 
 const ProfileCompletion: React.FC = () => {
   const { user } = useAuth0();
@@ -27,8 +28,8 @@ const ProfileCompletion: React.FC = () => {
       };
 
       const response = await axios.post(
-        "http://localhost:3000/api/users/complete-profile",
-        userData
+        apiUrl("/api/users/complete-profile"),
+        userData,
       );
 
       console.log("Profile updated successfully:", response.data);

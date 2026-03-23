@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import InstagramComponent from "../../Components/InstagramComponent/InstagramComponent.component";
 import Masonry from "react-masonry-css";
+import { apiUrl } from "../../config/api";
 
 interface Ad {
   id: number;
@@ -38,7 +39,7 @@ const TagsPage = () => {
 
       try {
         const response = await fetch(
-          `http://localhost:3000/api/ads/ads-by-tag/${cleanTag}`
+          apiUrl(`/api/ads/ads-by-tag/${cleanTag}`),
         );
         const json = await response.json();
         setAds(json.data || []);

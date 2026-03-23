@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import InstagramComponent from "../../Components/InstagramComponent/InstagramComponent.component";
 import Masonry from "react-masonry-css";
+import { apiUrl } from "../../config/api";
 
 interface Ad {
   _id: string;
@@ -24,9 +25,7 @@ const HomePage: React.FC = () => {
     const getAdsForFrontPage = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          "http://localhost:3000/api/ads/most-recent"
-        );
+        const response = await fetch(apiUrl("/api/ads/most-recent"));
         const data = await response.json();
         if (data.success) {
           setFrontPageAds(data.data);

@@ -2,6 +2,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { InstagramEmbed } from "react-social-media-embed";
+import { apiUrl } from "../../config/api";
 
 interface Ad {
   _id?: string;
@@ -100,12 +101,9 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
 
   const handleDeleteAd = async (id: number) => {
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/users/delete/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(apiUrl(`/api/users/delete/${id}`), {
+        method: "DELETE",
+      });
       const data = await response.json();
       if (data.success) {
         setShowDeletePopup(false);

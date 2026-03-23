@@ -7,6 +7,7 @@ import axios from "axios";
 import { useUser } from "../../UserContext";
 import Masonry from "react-masonry-css";
 import { useToast } from "../../hooks/useToast";
+import { apiUrl } from "../../config/api";
 
 // Define the interface for custom user data from your PostgreSQL DB
 interface CustomUserData {
@@ -60,9 +61,7 @@ function Profile() {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/users/username/${encodeURIComponent(
-            username
-          )}`
+          apiUrl(`/api/users/username/${encodeURIComponent(username)}`),
         );
         const userData: CustomUserData = response.data.user;
         setCustomUserData(userData);
@@ -99,7 +98,7 @@ function Profile() {
     const getAdsForProfile = async (auth0Id: string) => {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/ads/user/${encodeURIComponent(auth0Id)}`
+          apiUrl(`/api/ads/user/${encodeURIComponent(auth0Id)}`),
         );
         const data = await response.json();
         if (data.success) {
@@ -139,12 +138,10 @@ function Profile() {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/users/delete-account/${encodeURIComponent(
-          user.sub
-        )}`,
+        apiUrl(`/api/users/delete-account/${encodeURIComponent(user.sub)}`),
         {
           method: "DELETE",
-        }
+        },
       );
       if (response.ok) {
         setPopUpAfterDeleting(true);

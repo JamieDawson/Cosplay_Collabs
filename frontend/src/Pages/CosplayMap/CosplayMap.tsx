@@ -6,6 +6,7 @@ import "leaflet.markercluster";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import { apiUrl } from "../../config/api";
 
 // Fix default icon paths so markers don't 404
 L.Icon.Default.mergeOptions({
@@ -153,7 +154,7 @@ const CosplayMap: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch("http://localhost:3000/api/ads/all");
+        const response = await fetch(apiUrl("/api/ads/all"));
         if (!response.ok) {
           throw new Error("Failed to load ads for map");
         }

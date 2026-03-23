@@ -3,6 +3,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useUser } from "./UserContext";
+import { apiUrl } from "./config/api";
 
 //Purpose: Handles where to send the user after they log in.
 
@@ -46,7 +47,7 @@ const PostLoginRedirect = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/users/${encodeURIComponent(user.sub)}`
+          apiUrl(`/api/users/${encodeURIComponent(user.sub)}`),
         );
         const customUser = response.data.user;
         console.log(customUser);

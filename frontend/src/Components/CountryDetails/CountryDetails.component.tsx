@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import InstagramComponent from "../InstagramComponent/InstagramComponent.component";
 import Masonry from "react-masonry-css";
+import { apiUrl } from "../../config/api";
 
 interface Ad {
   _id: string;
@@ -26,7 +27,7 @@ const CountryDetails: React.FC = () => {
       if (!country) return;
       try {
         const response = await fetch(
-          `http://localhost:3000/api/ads/by-country/${encodeURIComponent(country)}`,
+          apiUrl(`/api/ads/by-country/${encodeURIComponent(country)}`),
         );
         const data = await response.json();
         if (data.success) {
