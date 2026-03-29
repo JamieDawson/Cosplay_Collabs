@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import NavBar from "./Components/NavBar/NavBar.component";
 import ErrorBoundary from "./Components/ErrorBoundary/ErrorBoundary.component";
@@ -15,13 +16,34 @@ import StateDetails from "./Components/StateDetails/StateDetails.component";
 import PostLoginRedirect from "./PostLoginRedirect";
 import CosplayMap from "./Pages/CosplayMap/CosplayMap";
 
+function skipToMainContent(e: MouseEvent<HTMLAnchorElement>) {
+  e.preventDefault();
+  const el = document.getElementById("main-content");
+  if (!el) return;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)")
+    .matches;
+  el.focus({ preventScroll: true });
+  el.scrollIntoView({
+    behavior: reduceMotion ? "auto" : "smooth",
+    block: "start",
+  });
+}
+
 function App() {
   return (
     <Router>
       <div className="App min-h-screen font-sans antialiased">
+        <a
+          className="skip-link"
+          href="#main-content"
+          onClick={skipToMainContent}
+        >
+          Skip to main content
+        </a>
         <ErrorBoundary>
           <NavBar />
         </ErrorBoundary>
+        <main id="main-content" tabIndex={-1} className="outline-none">
         <Routes>
           <Route
             path="/"
@@ -129,6 +151,7 @@ function App() {
             }
           />
         </Routes>
+        </main>
       </div>
     </Router>
   );

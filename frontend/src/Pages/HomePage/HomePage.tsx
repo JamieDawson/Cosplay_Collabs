@@ -83,10 +83,18 @@ const HomePage: React.FC = () => {
   if (loading && frontPageAds.length === 0) {
     return (
       <div className="page-shell">
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto max-w-7xl">
           <div className="surface-card-strong p-10 text-center">
-            <div className="flex flex-col items-center justify-center">
-              <div className="mb-4 h-12 w-12 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"></div>
+            <div
+              className="flex flex-col items-center justify-center"
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
+            >
+              <div
+                className="mb-4 h-12 w-12 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"
+                aria-hidden
+              />
               <p className="text-xl text-gray-600">Loading ads...</p>
             </div>
           </div>
@@ -99,7 +107,13 @@ const HomePage: React.FC = () => {
     <div className="page-shell">
       <div className="max-w-7xl mx-auto">
         {loading && (
-          <p className="text-center text-sm text-gray-500 mb-4">Updating…</p>
+          <p
+            className="mb-4 text-center text-sm text-gray-500"
+            role="status"
+            aria-live="polite"
+          >
+            Updating…
+          </p>
         )}
         <Masonry
           breakpointCols={breakpointColumnsObj}

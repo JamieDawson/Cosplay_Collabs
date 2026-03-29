@@ -12,9 +12,10 @@ function LogOutButton() {
   };
 
   return isAuthenticated ? (
-    <button 
+    <button
+      type="button"
       onClick={handleLogout}
-      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors shadow-md"
+      className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-md transition-colors hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
     >
       Log Out
     </button>

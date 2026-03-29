@@ -213,10 +213,19 @@ const CosplayMap: React.FC = () => {
       </div>
 
       {loading && (
-        <p className="text-center text-gray-600 mb-2">Loading locations…</p>
+        <p
+          className="mb-2 text-center text-gray-600"
+          role="status"
+          aria-live="polite"
+        >
+          Loading locations…
+        </p>
       )}
       {error && (
-        <p className="text-center text-red-600 mb-2">
+        <p
+          className="mb-2 text-center text-red-600"
+          role="alert"
+        >
           {error} — please try again later.
         </p>
       )}
@@ -225,6 +234,7 @@ const CosplayMap: React.FC = () => {
         center={defaultCenter}
         zoom={4}
         style={{ height: "500px", width: "100%" }}
+        aria-label="Interactive map of cosplayer ad locations. Use arrow keys to pan when focused."
       >
         <TileLayer
           attribution="© OpenStreetMap contributors"

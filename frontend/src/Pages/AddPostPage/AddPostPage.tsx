@@ -305,15 +305,27 @@ const AddPostPage: React.FC = () => {
     <>
       <ToastContainer />
       {adCreatedPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
-            <p className="text-lg font-semibold text-gray-800 mb-4 text-center">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          role="presentation"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ad-created-heading"
+            className="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"
+          >
+            <p
+              id="ad-created-heading"
+              className="mb-4 text-center text-lg font-semibold text-gray-800"
+            >
               Ad created!
             </p>
             <div className="flex justify-center">
               <button
+                type="button"
                 onClick={() => closeAdCreatedPopup()}
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                className="rounded-lg bg-blue-500 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
               >
                 OK!
               </button>
@@ -332,65 +344,126 @@ const AddPostPage: React.FC = () => {
           <form
             onSubmit={handleSubmit}
             className="surface-card-strong mx-auto flex max-w-2xl flex-col gap-4 p-6 md:p-8"
+            aria-busy={uploading}
           >
-            <input
-              maxLength={maxLengthTitle}
-              name="title"
-              placeholder="Title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              className="w-full rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
-            />
-            <p className="text-sm text-gray-500 text-right">
-              {formData.title.length}/{maxLengthTitle}
-            </p>
-            <textarea
-              maxLength={maxLengthDescription}
-              name="description"
-              placeholder="Description"
-              value={formData.description}
-              onChange={handleChange}
-              required
-              className="min-h-[80px] w-full resize-y rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
-            />
-            <p className="text-sm text-gray-500 text-right">
-              {formData.description.length} / {maxLengthDescription}
-            </p>
-            <input
-              name="country"
-              placeholder="Country (e.g., USA, Canada, UK)"
-              value={formData.country}
-              onChange={handleChange}
-              required
-              className="w-full rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
-            />
-            <input
-              name="state"
-              placeholder="State / Region (e.g., CA, Ontario)"
-              value={formData.state}
-              onChange={handleChange}
-              required
-              className="w-full rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
-            />
-            <input
-              name="city"
-              placeholder="City (e.g., San Francisco)"
-              value={formData.city}
-              onChange={handleChange}
-              required
-              className="w-full rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
-            />
-            <p className="text-xs text-gray-500 -mt-2">
-              We verify your location with OpenStreetMap and save the official place names so
-              everyone lands on the same city/country pages.
-            </p>
+            <h1 className="text-2xl font-extrabold text-slate-800 md:text-3xl">
+              Create an ad
+            </h1>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="add-post-title"
+                className="text-sm font-medium text-slate-700"
+              >
+                Title <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="add-post-title"
+                maxLength={maxLengthTitle}
+                name="title"
+                placeholder="Title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                aria-describedby="add-post-title-count"
+                className="w-full rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
+              />
+              <p
+                id="add-post-title-count"
+                className="text-right text-sm text-gray-500"
+              >
+                {formData.title.length}/{maxLengthTitle}
+              </p>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="add-post-description"
+                className="text-sm font-medium text-slate-700"
+              >
+                Description <span className="text-red-600">*</span>
+              </label>
+              <textarea
+                id="add-post-description"
+                maxLength={maxLengthDescription}
+                name="description"
+                placeholder="Description"
+                value={formData.description}
+                onChange={handleChange}
+                required
+                aria-describedby="add-post-description-count"
+                className="min-h-[80px] w-full resize-y rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
+              />
+              <p
+                id="add-post-description-count"
+                className="text-right text-sm text-gray-500"
+              >
+                {formData.description.length} / {maxLengthDescription}
+              </p>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="add-post-country"
+                className="text-sm font-medium text-slate-700"
+              >
+                Country <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="add-post-country"
+                name="country"
+                placeholder="Country (e.g., USA, Canada, UK)"
+                value={formData.country}
+                onChange={handleChange}
+                required
+                autoComplete="country-name"
+                className="w-full rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="add-post-state"
+                className="text-sm font-medium text-slate-700"
+              >
+                State / region <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="add-post-state"
+                name="state"
+                placeholder="State / Region (e.g., CA, Ontario)"
+                value={formData.state}
+                onChange={handleChange}
+                required
+                className="w-full rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="add-post-city"
+                className="text-sm font-medium text-slate-700"
+              >
+                City <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="add-post-city"
+                name="city"
+                placeholder="City (e.g., San Francisco)"
+                value={formData.city}
+                onChange={handleChange}
+                required
+                autoComplete="address-level2"
+                aria-describedby="add-post-location-hint"
+                className="w-full rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
+              />
+              <p id="add-post-location-hint" className="-mt-1 text-xs text-gray-500">
+                We verify your location with OpenStreetMap and save the official place names so
+                everyone lands on the same city/country pages.
+              </p>
+            </div>
 
             {/* Instagram URLs Section */}
-            <div className="flex flex-col gap-4">
-              <label className="text-sm font-medium text-gray-700">
-                Instagram Post URLs * (Max 10)
-              </label>
+            <fieldset className="flex flex-col gap-4 border-0 p-0">
+              <legend className="text-sm font-medium text-gray-700">
+                Instagram post URLs <span className="text-red-600">*</span> (max
+                10)
+              </legend>
               {uploadCountsLoading ? (
                 <p className="text-xs text-gray-500">
                   Loading upload counts...
@@ -409,6 +482,7 @@ const AddPostPage: React.FC = () => {
               {instagramUrls.map((url, index) => (
                 <div key={index} className="flex gap-2">
                   <input
+                    id={`add-post-instagram-${index}`}
                     type="url"
                     placeholder={`Instagram URL ${index + 1} (e.g., https://www.instagram.com/p/ABC123/)`}
                     value={url}
@@ -416,13 +490,14 @@ const AddPostPage: React.FC = () => {
                       handleInstagramUrlChange(index, e.target.value)
                     }
                     disabled={!canUploadInstagram && url === ""}
+                    aria-label={`Instagram post URL ${index + 1}`}
                     className="flex-1 rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:cursor-not-allowed disabled:bg-gray-100 md:text-base"
                   />
                   {instagramUrls.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeInstagramUrl(index)}
-                      className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm"
+                      className="rounded-lg bg-red-500 px-3 py-2 text-sm text-white hover:bg-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2"
                     >
                       Remove
                     </button>
@@ -434,20 +509,33 @@ const AddPostPage: React.FC = () => {
                 Enter Instagram post URLs (e.g.,
                 https://www.instagram.com/p/ABC123/)
               </p>
-            </div>
+            </fieldset>
+            <fieldset className="flex flex-col gap-3 border-0 p-0">
+              <legend className="text-sm font-medium text-slate-700">
+                Tags (optional keywords)
+              </legend>
             {formData.keywords.map((keyword, index) => (
-              <input
-                key={index}
-                placeholder={`Keyword ${index + 1}`}
-                value={keyword}
-                onChange={(e) => handleKeywordChange(index, e.target.value)}
-                className="w-full rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
-              />
+              <div key={index} className="flex flex-col gap-1">
+                <label
+                  htmlFor={`add-post-keyword-${index}`}
+                  className="sr-only"
+                >
+                  Keyword {index + 1}
+                </label>
+                <input
+                  id={`add-post-keyword-${index}`}
+                  placeholder={`Keyword ${index + 1}`}
+                  value={keyword}
+                  onChange={(e) => handleKeywordChange(index, e.target.value)}
+                  className="w-full rounded-xl border border-slate-200/90 bg-white/90 p-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200 md:text-base"
+                />
+              </div>
             ))}
+            </fieldset>
             <button
               type="submit"
               disabled={uploading}
-              className="mt-2 w-full rounded-xl bg-gradient-to-r from-sky-500 to-pink-500 py-3 text-base font-bold text-white shadow-md shadow-sky-400/25 transition-all hover:from-sky-400 hover:to-pink-400 disabled:cursor-not-allowed disabled:from-slate-300 disabled:to-slate-400 disabled:shadow-none md:text-lg"
+              className="mt-2 w-full rounded-xl bg-gradient-to-r from-sky-500 to-pink-500 py-3 text-base font-bold text-white shadow-md shadow-sky-400/25 transition-all hover:from-sky-400 hover:to-pink-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:from-slate-300 disabled:to-slate-400 disabled:shadow-none md:text-lg"
             >
               {uploading ? "Uploading..." : "Create Ad"}
             </button>

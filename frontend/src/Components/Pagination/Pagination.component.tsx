@@ -23,7 +23,7 @@ const Pagination: React.FC<Props> = ({
 
   const items = buildPageNumbers(page, totalPages);
   const btnBase =
-    "min-w-[2.25rem] h-9 px-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
+    "min-w-[2.25rem] h-9 px-2 rounded-lg text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40";
   const inactive =
     "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300";
   const active =

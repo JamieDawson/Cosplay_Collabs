@@ -63,10 +63,15 @@ class ErrorBoundary extends Component<Props, State> {
       // Default fallback UI
       return (
         <div className="page-shell flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full">
+          <div
+            className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-xl"
+            role="alert"
+          >
             <div className="text-center">
-              <div className="text-6xl mb-4">⚠️</div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-4">
+              <div className="mb-4 text-6xl" aria-hidden>
+                ⚠️
+              </div>
+              <h1 className="mb-4 text-3xl font-bold text-gray-800">
                 Oops! Something went wrong
               </h1>
               <p className="text-gray-600 mb-6">
@@ -92,17 +97,19 @@ class ErrorBoundary extends Component<Props, State> {
                 </details>
               )}
 
-              <div className="flex gap-4 justify-center">
+              <div className="flex justify-center gap-4">
                 <button
+                  type="button"
                   onClick={this.handleReset}
-                  className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                  className="rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
                 >
                   Try Again
                 </button>
-                <Link to="/">
-                  <button className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors font-medium">
-                    Go Home
-                  </button>
+                <Link
+                  to="/"
+                  className="inline-flex items-center justify-center rounded-lg bg-purple-500 px-6 py-3 font-medium text-white transition-colors hover:bg-purple-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                >
+                  Go Home
                 </Link>
               </div>
             </div>

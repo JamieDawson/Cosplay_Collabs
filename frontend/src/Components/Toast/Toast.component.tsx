@@ -44,17 +44,25 @@ const Toast: React.FC<ToastProps> = ({
     return `${baseStyles} ${typeStyles[type]} ${visibilityStyles}`;
   };
 
+  const livePoliteness =
+    type === "error" ? "assertive" : ("polite" as const);
+
   return (
-    <div className={getToastStyles()}>
+    <div
+      className={getToastStyles()}
+      role="status"
+      aria-live={livePoliteness}
+    >
       <div className="flex items-center justify-between">
         <p className="font-medium">{message}</p>
         <button
+          type="button"
           onClick={() => {
             setIsVisible(false);
             setTimeout(onClose, 300);
           }}
-          className="ml-4 text-white hover:text-gray-200 focus:outline-none"
-          aria-label="Close"
+          className="ml-4 text-white hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+          aria-label="Dismiss notification"
         >
           <span className="text-xl">&times;</span>
         </button>

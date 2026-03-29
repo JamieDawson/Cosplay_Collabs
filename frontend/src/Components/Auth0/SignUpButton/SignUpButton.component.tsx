@@ -13,9 +13,10 @@ function SignUpButton() {
   };
 
   return !isAuthenticated ? (
-    <button 
+    <button
+      type="button"
       onClick={handleClick}
-      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium text-sm transition-colors shadow-md"
+      className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-md transition-colors hover:bg-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
     >
       Sign Up
     </button>

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import LoginButton from "../Auth0/LoginButton/LoginButton.component";
 import LogOutButton from "../Auth0/LogOutButton/LogOutButton.component";
 import SignUpButton from "../Auth0/SignUpButton/SignUpButton.component";
@@ -11,9 +11,13 @@ const linkBase =
 const NavBar: React.FC = () => {
   const { user } = useAuth0();
   const { username } = useUser();
+  const { pathname } = useLocation();
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-gradient-nav shadow-lg shadow-sky-500/5 backdrop-blur-xl">
+    <nav
+      className="sticky top-0 z-50 w-full border-b border-white/10 bg-gradient-nav shadow-lg shadow-sky-500/5 backdrop-blur-xl"
+      aria-label="Primary"
+    >
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
         <div className="text-xl font-extrabold tracking-tight md:text-2xl">
           <Link
@@ -25,11 +29,11 @@ const NavBar: React.FC = () => {
         </div>
 
         <ul className="m-0 flex list-none flex-wrap items-center justify-end gap-2 p-0 md:gap-2.5">
-          {user && (
+          {user && username && (
             <li className="hidden md:block">
               <Link
                 to={`/profile/${username}`}
-                className={`${linkBase} gap-1.5 border border-pink-400/30 bg-gradient-to-r from-pink-500/90 to-fuchsia-600/90 text-white shadow-md shadow-pink-500/20 hover:from-pink-400 hover:to-fuchsia-500`}
+                className={`${linkBase}  gap-1.5 border border-pink-400/30 bg-gradient-to-r from-pink-500/90 to-fuchsia-600/90 text-white shadow-md shadow-pink-500/20 hover:from-pink-400 hover:to-fuchsia-500`}
               >
                 <span aria-hidden>👤</span>
                 <span className="max-w-[10rem] truncate">{username}</span>
@@ -49,6 +53,7 @@ const NavBar: React.FC = () => {
             <Link
               to="/"
               className={`${linkBase} border border-sky-400/40 bg-sky-500/15 text-sky-100 hover:border-sky-300/60 hover:bg-sky-400/25`}
+              aria-current={pathname === "/" ? "page" : undefined}
             >
               Home
             </Link>
@@ -57,6 +62,7 @@ const NavBar: React.FC = () => {
             <Link
               to="/about"
               className={`${linkBase} border border-sky-400/40 bg-sky-500/15 text-sky-100 hover:border-sky-300/60 hover:bg-sky-400/25`}
+              aria-current={pathname === "/about" ? "page" : undefined}
             >
               About
             </Link>
@@ -73,6 +79,7 @@ const NavBar: React.FC = () => {
             <Link
               to="/tags-page"
               className={`${linkBase} border border-sky-400/40 bg-sky-500/15 text-sky-100 hover:border-sky-300/60 hover:bg-sky-400/25`}
+              aria-current={pathname === "/tags-page" ? "page" : undefined}
             >
               Tags
             </Link>
@@ -86,7 +93,7 @@ const NavBar: React.FC = () => {
             </Link>
           </li>
 
-          {user && (
+          {user && username && (
             <li className="md:hidden">
               <Link
                 to={`/profile/${username}`}

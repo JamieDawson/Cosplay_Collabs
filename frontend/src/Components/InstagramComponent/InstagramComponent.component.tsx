@@ -127,14 +127,15 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
 
   return (
     <>
-      <div className="surface-card-strong flex w-full max-w-sm flex-col overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-brand-lg">
+      <article className="surface-card-strong flex w-full max-w-sm flex-col overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-brand-lg">
         <div className="flex items-center justify-between gap-2 p-3">
           <div className="flex items-center gap-2">
             {ad.username && ad.username.trim().length > 0 && (
               <button
                 type="button"
                 onClick={goToUserProfile}
-                className="rounded-full bg-gradient-to-r from-sky-100 to-pink-100 px-3 py-1.5 text-xs font-semibold text-slate-800 ring-1 ring-sky-200/60 transition-colors hover:from-sky-200 hover:to-pink-200"
+                aria-label={`View profile for ${ad.username}`}
+                className="rounded-full bg-gradient-to-r from-sky-100 to-pink-100 px-3 py-1.5 text-xs font-semibold text-slate-800 ring-1 ring-sky-200/60 transition-colors hover:from-sky-200 hover:to-pink-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2"
               >
                 @{ad.username}
               </button>
@@ -143,14 +144,16 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
           {user?.sub === ad.user_id && (
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={() => setShowDeletePopup(true)}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
+                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2"
               >
                 Delete
               </button>
               <button
+                type="button"
                 onClick={() => goToUpdateForm(ad)}
-                className="rounded-lg bg-gradient-to-r from-sky-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-sky-400/30 transition-all hover:from-sky-400 hover:to-cyan-400"
+                className="rounded-lg bg-gradient-to-r from-sky-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-sky-400/30 transition-all hover:from-sky-400 hover:to-cyan-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2"
               >
                 Update
               </button>
@@ -191,9 +194,11 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
             {ad.keywords.map((keyword, index) =>
               keyword.length > 0 ? (
                 <button
+                  type="button"
                   onClick={() => goToTagPage(keyword)}
                   key={index}
-                  className="rounded-full bg-gradient-to-r from-fuchsia-100 to-pink-100 px-3 py-1 text-xs font-semibold text-fuchsia-800 ring-1 ring-pink-200/60 transition-colors hover:from-fuchsia-200 hover:to-pink-200"
+                  aria-label={`View posts tagged ${keyword}`}
+                  className="rounded-full bg-gradient-to-r from-fuchsia-100 to-pink-100 px-3 py-1 text-xs font-semibold text-fuchsia-800 ring-1 ring-pink-200/60 transition-colors hover:from-fuchsia-200 hover:to-pink-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 focus-visible:ring-offset-2"
                 >
                   #{keyword}
                 </button>
@@ -204,16 +209,20 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
             <div className="flex flex-wrap gap-2 justify-center pt-2 border-t border-gray-100">
               {ad.state && (
                 <button
+                  type="button"
                   onClick={goToStatePage}
-                  className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-200 transition-colors"
+                  aria-label={`Browse ads in ${ad.state}`}
+                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
                 >
                   {ad.state}
                 </button>
               )}
               {ad.city && (
                 <button
+                  type="button"
                   onClick={goToCityPage}
-                  className="px-3 py-1.5 bg-sky-100 text-sky-700 rounded-lg text-xs font-medium hover:bg-sky-200 transition-colors"
+                  aria-label={`Browse ads in ${ad.city}`}
+                  className="rounded-lg bg-sky-100 px-3 py-1.5 text-xs font-medium text-sky-700 transition-colors hover:bg-sky-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2"
                 >
                   {ad.city}
                 </button>
@@ -221,24 +230,37 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
             </div>
           )}
         </div>
-      </div>
+      </article>
 
       {showDeletePopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
-            <p className="text-lg font-semibold text-gray-800 mb-4 text-center">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          role="presentation"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-ad-heading"
+            className="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"
+          >
+            <p
+              id="delete-ad-heading"
+              className="mb-4 text-center text-lg font-semibold text-gray-800"
+            >
               Are you sure you want to delete this ad?
             </p>
-            <div className="flex gap-3 justify-center">
+            <div className="flex justify-center gap-3">
               <button
+                type="button"
                 onClick={() => handleDeleteAd(ad.id)}
-                className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+                className="rounded-lg bg-red-500 px-6 py-2 font-medium text-white transition-colors hover:bg-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
               >
                 Yes, Delete
               </button>
               <button
+                type="button"
                 onClick={() => setShowDeletePopup(false)}
-                className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-medium"
+                className="rounded-lg bg-gray-300 px-6 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
               >
                 Cancel
               </button>
@@ -248,15 +270,27 @@ const InstagramComponent: React.FC<InstagramComponentProps> = ({
       )}
 
       {confirmDeletedPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
-            <p className="text-lg font-semibold text-gray-800 mb-4 text-center">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          role="presentation"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="deleted-ad-heading"
+            className="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"
+          >
+            <p
+              id="deleted-ad-heading"
+              className="mb-4 text-center text-lg font-semibold text-gray-800"
+            >
               Your ad has been deleted!
             </p>
             <div className="flex justify-center">
               <button
+                type="button"
                 onClick={handleConfirmDeletedPopup}
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                className="rounded-lg bg-blue-500 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
               >
                 Close
               </button>
