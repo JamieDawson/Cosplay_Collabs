@@ -8,7 +8,7 @@ function SignUpButton() {
     loginWithRedirect({
       authorizationParams: {
         // Ensures the user can pick the account they intend to sign up with.
-        prompt: "login",
+        prompt: "select_account",
         screen_hint: "signup",
       },
     });

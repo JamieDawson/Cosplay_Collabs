@@ -9,7 +9,8 @@ function LoginButton() {
     // Without this, Auth0 may reuse the existing SSO session and keep the first account.
     loginWithRedirect({
       authorizationParams: {
-        prompt: "login",
+        // Shows the Google account chooser so the user can switch accounts.
+        prompt: "select_account",
       },
     });
   };
