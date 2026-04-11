@@ -66,7 +66,9 @@ const LocationDetails: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
             <div className="flex flex-col items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
-              <p className="text-xl text-gray-600">Loading ads...</p>
+              <p className="text-xl text-gray-600">
+                Loading posts... This may take a few seconds.
+              </p>
             </div>
           </div>
         </div>
