@@ -9,10 +9,7 @@ import { useUser } from "../../UserContext";
 import Masonry from "react-masonry-css";
 import { useToast } from "../../hooks/useToast";
 import { apiUrl } from "../../config/api";
-import {
-  POSTS_PER_PAGE,
-  type PaginationMeta,
-} from "../../config/pagination";
+import { POSTS_PER_PAGE, type PaginationMeta } from "../../config/pagination";
 
 const MAX_ABOUT_ME_LENGTH = 200;
 
@@ -57,7 +54,7 @@ function Profile() {
   const [adsPage, setAdsPage] = useState(1);
   const [adsLoading, setAdsLoading] = useState(false);
   const [customUserData, setCustomUserData] = useState<CustomUserData | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(true);
   const [finalWarningPopup, setFinalWarningPopup] = useState(false);
@@ -179,7 +176,10 @@ function Profile() {
     if (!user?.sub) return;
     const trimmed = aboutMeDraft.trim();
     if (trimmed.length > MAX_ABOUT_ME_LENGTH) {
-      showToast(`About me must be ${MAX_ABOUT_ME_LENGTH} characters or less.`, "error");
+      showToast(
+        `About me must be ${MAX_ABOUT_ME_LENGTH} characters or less.`,
+        "error",
+      );
       return;
     }
     setAboutMeSaving(true);
@@ -225,8 +225,7 @@ function Profile() {
   const deleteCurrentUserProfile = async () => {
     if (!user?.sub) return;
 
-    const expected =
-      customUserData?.username?.trim() || username?.trim() || "";
+    const expected = customUserData?.username?.trim() || username?.trim() || "";
     if (!expected || deleteUsernameConfirm.trim() !== expected) {
       return;
     }
@@ -249,7 +248,7 @@ function Profile() {
       console.error("Error deleting account:", error);
       showToast(
         "An error occurred while deleting your account. Please try again.",
-        "error"
+        "error",
       );
     }
   };
@@ -279,8 +278,9 @@ function Profile() {
     640: 1,
   };
 
-  const isOwnProfile =
-    Boolean(isAuthenticated && customUserData?.auth0_id === user?.sub);
+  const isOwnProfile = Boolean(
+    isAuthenticated && customUserData?.auth0_id === user?.sub,
+  );
   const displayUsername =
     customUserData?.username?.trim() || username?.trim() || "cosplayer";
   const usernameToConfirmDeletion =
@@ -374,7 +374,9 @@ function Profile() {
 
           {/* User's ads (paginated) */}
           {adsLoading && ads.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">Loading posts…</p>
+            <p className="text-center text-gray-500 py-8">
+              Loading posts. This may take a few seconds.
+            </p>
           ) : (
             <>
               {adsLoading && ads.length > 0 && (
@@ -399,9 +401,7 @@ function Profile() {
                 />
               )}
               {!adsLoading && ads.length === 0 && (
-                <p className="text-center text-gray-500 py-8">
-                  No posts yet.
-                </p>
+                <p className="text-center text-gray-500 py-8">No posts yet.</p>
               )}
             </>
           )}
@@ -429,16 +429,14 @@ function Profile() {
                 About me
               </h2>
               <p className="text-sm text-gray-500 mb-4">
-                Max {MAX_ABOUT_ME_LENGTH} characters. This text is public on your
-                profile.
+                Max {MAX_ABOUT_ME_LENGTH} characters. This text is public on
+                your profile.
               </p>
               <textarea
                 id="about-me-textarea"
                 value={aboutMeDraft}
                 onChange={(e) =>
-                  setAboutMeDraft(
-                    e.target.value.slice(0, MAX_ABOUT_ME_LENGTH),
-                  )
+                  setAboutMeDraft(e.target.value.slice(0, MAX_ABOUT_ME_LENGTH))
                 }
                 rows={5}
                 maxLength={MAX_ABOUT_ME_LENGTH}

@@ -83,8 +83,7 @@ const HomePage: React.FC = () => {
         Latest cosplay posts
       </h1>
       <p className="mt-1.5 text-sm text-gray-600 md:text-base">
-        Most recent firstasdfasdf Everyone’s posts in one feed, newest to
-        oldest.
+        Most recent post. Everyone’s posts in one feed, newest to oldest.
       </p>
     </div>
   );
