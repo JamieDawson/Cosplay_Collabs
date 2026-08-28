@@ -9,6 +9,7 @@ import {
   type PaginationMeta,
 } from "../../config/pagination";
 import { normalizeTag } from "../../utils/tags";
+import { COLD_START_LOADING_HINT } from "../../config/loading";
 
 interface Ad {
   id: number;
@@ -157,7 +158,10 @@ const TagsPage = () => {
           <div className="surface-card-strong p-10 text-center">
             <div className="flex flex-col items-center justify-center">
               <div className="mb-4 h-12 w-12 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"></div>
-              <p className="text-xl text-gray-600">Loading ads...</p>
+              <p className="text-xl text-gray-600">Loading posts…</p>
+              <p className="mt-2 max-w-md text-sm text-gray-500">
+                {COLD_START_LOADING_HINT}
+              </p>
             </div>
           </div>
         ) : ads.length > 0 ? (

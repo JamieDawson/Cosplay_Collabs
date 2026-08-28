@@ -6,6 +6,7 @@ import {
   mergeUserLocationWithCanonical,
 } from "../../utils/nominatimGeocode";
 import { apiUrl } from "../../config/api";
+import { COLD_START_LOADING_HINT } from "../../config/loading";
 
 const AddPostPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth0();
@@ -469,7 +470,7 @@ const AddPostPage: React.FC = () => {
               </legend>
               {uploadCountsLoading ? (
                 <p className="text-xs text-gray-500">
-                  Loading upload counts...
+                  Loading upload counts… {COLD_START_LOADING_HINT}
                 </p>
               ) : (
                 remainingInstagramUrls !== null && (

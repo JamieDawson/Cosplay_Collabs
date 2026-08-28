@@ -4,6 +4,7 @@ import Pagination from "../../Components/Pagination/Pagination.component";
 import Masonry from "react-masonry-css";
 import { apiUrl } from "../../config/api";
 import { POSTS_PER_PAGE, type PaginationMeta } from "../../config/pagination";
+import { COLD_START_LOADING_HINT } from "../../config/loading";
 
 interface Ad {
   _id: string;
@@ -114,7 +115,10 @@ const HomePage: React.FC = () => {
                 className="mb-4 h-12 w-12 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"
                 aria-hidden
               />
-              <p className="text-xl text-gray-600">Loading ads...</p>
+              <p className="text-xl text-gray-600">Loading posts…</p>
+              <p className="mt-2 max-w-md text-sm text-gray-500">
+                {COLD_START_LOADING_HINT}
+              </p>
             </div>
           </div>
         </div>

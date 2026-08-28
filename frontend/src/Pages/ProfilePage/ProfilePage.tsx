@@ -10,6 +10,7 @@ import Masonry from "react-masonry-css";
 import { useToast } from "../../hooks/useToast";
 import { apiUrl } from "../../config/api";
 import { POSTS_PER_PAGE, type PaginationMeta } from "../../config/pagination";
+import { COLD_START_LOADING_HINT } from "../../config/loading";
 
 const MAX_ABOUT_ME_LENGTH = 200;
 
@@ -265,8 +266,13 @@ function Profile() {
   if (loading)
     return (
       <div className="page-shell flex items-center justify-center">
-        <div className="text-xl font-semibold text-gray-700">
-          Loading profile...
+        <div className="text-center">
+          <p className="text-xl font-semibold text-gray-700">
+            Loading profile…
+          </p>
+          <p className="mt-2 max-w-md text-sm font-normal text-gray-500">
+            {COLD_START_LOADING_HINT}
+          </p>
         </div>
       </div>
     );
@@ -375,8 +381,7 @@ function Profile() {
           {/* User's ads (paginated) */}
           {adsLoading && ads.length === 0 ? (
             <p className="text-center text-gray-500 py-8">
-              Server is spinning up (free tier cold start). Initial load may
-              take up to 20 seconds.
+              Loading posts… {COLD_START_LOADING_HINT}
             </p>
           ) : (
             <>

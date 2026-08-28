@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useUser } from "./UserContext";
 import { apiUrl } from "./config/api";
+import { COLD_START_LOADING_HINT } from "./config/loading";
 
 //Purpose: Handles where to send the user after they log in.
 
@@ -86,7 +87,10 @@ const PostLoginRedirect = () => {
     <div className="page-shell flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-        <p className="text-xl text-gray-600">Redirecting...</p>
+        <p className="text-xl text-gray-600">Finishing sign-in…</p>
+        <p className="mt-2 max-w-md text-sm text-gray-500">
+          {COLD_START_LOADING_HINT}
+        </p>
       </div>
     </div>
   );

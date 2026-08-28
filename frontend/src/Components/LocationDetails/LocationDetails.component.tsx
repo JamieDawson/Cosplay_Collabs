@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import InstagramComponent from "../InstagramComponent/InstagramComponent.component";
 import Masonry from "react-masonry-css";
 import { apiUrl } from "../../config/api";
+import { COLD_START_LOADING_HINT } from "../../config/loading";
 
 interface Ad {
   _id: string;
@@ -66,8 +67,9 @@ const LocationDetails: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
             <div className="flex flex-col items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
-              <p className="text-xl text-gray-600">
-                Loading posts... This may take a few seconds.
+              <p className="text-xl text-gray-600">Loading posts…</p>
+              <p className="mt-2 max-w-md text-sm text-gray-500">
+                {COLD_START_LOADING_HINT}
               </p>
             </div>
           </div>

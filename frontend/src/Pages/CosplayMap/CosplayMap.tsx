@@ -7,6 +7,7 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { apiUrl } from "../../config/api";
+import { COLD_START_LOADING_HINT } from "../../config/loading";
 
 // Fix default icon paths so markers don't 404
 L.Icon.Default.mergeOptions({
@@ -219,6 +220,9 @@ const CosplayMap: React.FC = () => {
           aria-live="polite"
         >
           Loading locations…
+          <span className="mt-1 block text-sm text-gray-500">
+            {COLD_START_LOADING_HINT}
+          </span>
         </p>
       )}
       {error && (
